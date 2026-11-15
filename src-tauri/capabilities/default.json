@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "BigFish 默认权限",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

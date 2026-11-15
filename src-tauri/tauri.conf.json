@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BigFish",
+  "version": "0.1.0",
+  "identifier": "com.bigfish.launcher",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "大肥鱼启动器 BigFish 🐟",
+        "width": 1024,
+        "height": 680,
+        "minWidth": 800,
+        "minHeight": 560,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Game",
+    "shortDescription": "大肥鱼启动器 BigFish",
+    "longDescription": "非官方 Minecraft Java 版启动器：版本下载、Forge 启动、存档导入、Java 管理。"
+  }
+}

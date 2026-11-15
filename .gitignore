@@ -1,0 +1,25 @@
+# 构建产物
+/target/
+/src-tauri/target/
+/src-tauri/gen/
+/BigFish.app/
+
+# 运行时数据（日志、临时配置）
+/logs/
+/src-tauri/logs/
+/config/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
+
+# 编辑器 / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 本地环境
+.env
+*.local.json

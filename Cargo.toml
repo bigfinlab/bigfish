@@ -1,0 +1,13 @@
+[package]
+name = "bigfish"
+version = "0.1.0"
+description = "大肥鱼启动器 — 一个非官方的 Minecraft Java 版开源启动器"
+edition = "2024"
+
+[dependencies]
+flate2 = "1.1.11"
+md5 = "0.8.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha1 = "0.11.0"
+ureq = "3.5.2"
