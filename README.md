@@ -2,7 +2,7 @@
 
 > 一个**非官方**的开源 Minecraft Java 版启动器 🐟
 >
-> 由一名学生开发者和 DeepSeek「大肥鱼」一起做出来。
+> 由 **BigFin** 和 DeepSeek「大肥鱼」一起做出来。
 
 ---
 
