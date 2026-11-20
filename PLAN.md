@@ -19,10 +19,10 @@
 | 10 | 打包 .app（macOS） | ✅ 完成 | 工作区 `bigfish/BigFish.app`，双击启动，1024px 图标；`./package-macos.sh` 可重新打包（不往用户目录装） |
 | 11 | 内存设置 | ✅ 完成 | 设置页滑块，自动检测物理内存，推荐值 1/3；写入 `~/.bigfish/config.json`，启动用 `-Xmx` |
 | 12 | 关于信息 | ✅ 完成 | 放在设置页底部：版本号、平台、组件、更新日志（内嵌 CHANGELOG.md） |
-| 13 | 跨平台（Win/Linux） | 🟡 代码已适配 | 平台分支、图标 `.ico`/`.icns`、GitHub Actions workflow、`PACKAGING.md` 都就绪；实际构建需 Windows/Linux 环境验证 |
-| 14 | 合规发布 | ✅ 完成 | MIT LICENSE、README 合规声明、.gitignore、初始提交（22 文件）；推送 GitHub 待用户操作 |
+| 13 | 跨平台（Win/Linux） | ✅ 完成 | **GitHub Actions 四平台全部构建成功**（2026-11-20，v0.1.0 tag：macOS arm64/x64、Linux、Windows，29m48s，4 个 artifact） |
+| 14 | 合规发布 | ✅ 完成 | MIT LICENSE、README 合规声明、.gitignore；已推送到 `github.com/bigfinlab/bigfish`（私有），tag v0.1.0 |
 
-**完成度：12 / 14 ≈ 86%**（核心链路「下载 → 安装 → 离线登录 → 存档 → 启动 → 管理」已全部打通）
+**完成度：13 / 14 ≈ 93%**（核心链路「下载 → 安装 → 离线登录 → 存档 → 启动 → 管理」已全部打通）
 
 ## 🔧 技术现状
 
@@ -46,7 +46,8 @@ bigfish/
 ## 📅 剩下的任务（按价值）
 
 1. **微软正版登录**（最难）——OAuth 全链路，需要注册 Azure 应用
-2. **跨平台验证**（需要 Windows/Linux 机器或 GitHub Actions）
+
+> 跨平台验证已完成：GitHub Actions 免费构建 macOS / Linux / Windows 四个包，见仓库 Actions 页面。
 
 ## ▶️ 怎么触发
 
