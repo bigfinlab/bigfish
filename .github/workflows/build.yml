@@ -1,13 +1,17 @@
 name: Build BigFish
 
 # 触发方式：
-#   1. 在 GitHub 页面手动点 "Run workflow"
-#   2. 推送 v 开头的 tag（如 v0.1.0）自动构建并上传
+#   1. 在 GitHub 页面手动点 "Run workflow"（只构建，不发版）
+#   2. 推送 v 开头的 tag（如 v0.1.0）：四个平台构建 + 自动创建 GitHub Release
 on:
   workflow_dispatch:
   push:
     tags:
       - 'v*'
+
+# 创建 Release 需要写权限
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -88,3 +92,30 @@ jobs:
             src-tauri/target/**/release/bundle/**/*.AppImage
             src-tauri/target/**/release/bundle/**/*.msi
             src-tauri/target/**/release/bundle/**/*.exe
+
+  # 单独一个 job 统一发版：四个平台同时创建 Release 会打架
+  release:
+    name: 发布 Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载所有平台产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 检查产物清单
+        run: find artifacts -type f | head -60
+
+      - name: 创建 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BigFish ${{ github.ref_name }} · 大肥鱼启动器
+          generate_release_notes: true
+          # 目录形式的 .app 不上传，发给用户的是 dmg / msi / deb / AppImage
+          files: |
+            artifacts/**/*.dmg
+            artifacts/**/*.msi
+            artifacts/**/*.deb
+            artifacts/**/*.AppImage
