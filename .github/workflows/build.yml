@@ -55,16 +55,26 @@ jobs:
         if: matrix.args != ''
         run: rustup target add ${{ matrix.args == '--target aarch64-apple-darwin' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}
 
+      # 缓存 Rust 产物：第一次为空，之后能省掉大部分重编译
       - uses: swatinem/rust-cache@v2
         with:
-          workspaces: 'src-tauri -> target'
+          workspaces: |
+            . -> target
+            src-tauri -> target
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2" --locked
+      # 关键优化：用 npm 上的预编译 CLI（几秒装好）。
+      # 原来用 `cargo install tauri-cli` 要从源码编译 200+ 依赖，每个 job 白等 10–15 分钟。
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Tauri CLI (prebuilt)
+        run: npm install -g @tauri-apps/cli@^2
 
       - name: Build
         working-directory: src-tauri
-        run: cargo tauri build ${{ matrix.args }}
+        run: tauri build ${{ matrix.args }}
 
       - name: Upload bundles
         uses: actions/upload-artifact@v4
