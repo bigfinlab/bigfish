@@ -1,3 +1,45 @@
+## 0.2.0 — 2026-11-21
+
+加载器自动化：不用再手装 Forge / Fabric，模组也能在启动器里管理。
+
+### 加载器自动安装
+
+- **Fabric / Quilt**：走官方 Meta API 生成版本 JSON 并下载依赖库（纯 Rust，不需要 Java）
+- **Forge**：下载官方 installer jar，用本机 Java 执行 headless 安装
+- 缺原版时自动先下载原版，再装加载器
+- 入口：版本详情页 →「🧩 安装加载器」
+
+### 版本继承合并
+
+- 新增 `resolve_version`：递归解析 `inheritsFrom`，合并父版本的 libraries / arguments / jar / assetIndex
+- 修复 `build_classpath` 不认 maven 坐标格式的库（Fabric profile 没有 `downloads` 字段）
+- 效果：Forge / Fabric / NeoForge 版本可以正确组装 classpath 并启动（实测 Fabric 0.20.1 + 1.20.1 进主菜单）
+
+### 模组管理
+
+- 入口：版本详情页 →「📦 模组」
+- 解析 `fabric.mod.json`（Fabric / Quilt）、`META-INF/mods.toml`、`META-INF/neoforge.mods.toml`、`mcmod.info`（旧版 Forge）
+- 显示名称、版本、加载器、大小、简介
+- 启用 / 禁用（重命名 `.jar` ↔ `.jar.disabled`）、删除、打开 mods 目录
+
+### 微软正版登录（协议层）
+
+- 完整实现：设备码 OAuth → Xbox Live → XSTS → Minecraft → 玩家档案
+- token 持久化在 `~/.bigfish/auth.json`，过期自动刷新
+- 设置页新增「🎮 微软正版登录」，设备码直接显示在启动器里
+- **需要 `client_id`**：个人 Microsoft 账号无法注册 Azure 应用，需要有 Azure 订阅 / 学校邮箱 / M365 开发者计划之一；没有时仍可正常离线登录
+
+### 其他
+
+- 配置新增 `auth_client_id` / `auth_username` 字段（旧配置自动兼容）
+- 新增依赖 `zip`（读取模组 jar 元数据）
+
+### 已知问题
+
+- 微软登录缺 `client_id`，暂时只能用离线登录
+- 整合包（Modpack）管理尚未实现
+- 启动器自动更新尚未实现
+
 ## 0.1.0 — 2026-11-15
 
 首个可用版本，核心链路「下载 → 安装 → 登录 → 启动 → 管理」全部打通。

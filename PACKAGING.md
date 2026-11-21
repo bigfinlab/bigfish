@@ -74,7 +74,7 @@ cargo tauri build
 
 1. 把项目推到 GitHub（去掉 `.gitignore` 里排除的东西）
 2. 在仓库的 **Actions** 页面点 **Build BigFish** → **Run workflow**
-3. 或者打 tag：`git tag v0.1.0 && git push origin v0.1.0`
+3. 或者打 tag：`git tag v0.2.0 && git push origin v0.2.0`
 
 构建完成后，在 Actions 的 artifacts 里能下载：
 
