@@ -290,6 +290,29 @@
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px">已安装版本的需求</div>
           <div id="javaNeedList"></div>
         </div>
+        <div class="card">
+          <h3>🎮 微软正版登录</h3>
+          <div class="sub">用你自己的微软账号登录。不登录也能用离线模式。</div>
+          <div id="authState" style="margin:12px 0;font-size:13px;color:var(--muted)">加载中…</div>
+          <div class="field">
+            <label>Azure 应用 client_id（开发者填写，可选）</label>
+            <input id="authClientId" placeholder="例如 12345678-abcd-1234-efgh-1234567890ab" spellcheck="false">
+          </div>
+          <div class="row" style="flex-wrap:wrap">
+            <button id="saveClientIdBtn">保存 client_id</button>
+            <button class="primary" id="msLoginBtn">微软登录</button>
+            <button id="msLogoutBtn" style="display:none">退出登录</button>
+          </div>
+          <div id="deviceCodeBox" style="display:none;margin-top:14px;background:var(--panel2);
+               border:1px solid var(--border);border-radius:10px;padding:14px">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">
+              在浏览器打开 <a id="deviceCodeUri" href="#" target="_blank" style="color:var(--green)"></a>
+              并输入下面的代码：
+            </div>
+            <div id="deviceCodeValue" style="font-size:26px;font-weight:800;letter-spacing:4px;color:var(--text)">----</div>
+            <div id="deviceCodeHint" style="font-size:12px;color:var(--muted);margin-top:8px">等待授权…</div>
+          </div>
+        </div>
         <div class="card" style="margin-bottom:0">
           <div id="aboutHeader" style="display:flex;gap:14px;align-items:center;cursor:pointer">
             <div style="font-size:44px;line-height:1">🐟</div>
@@ -312,6 +335,48 @@
           <h3>📂 旧启动器存档</h3>
           <div class="sub">扫描官方 / HMCL / PCL2 等目录，一键导入到当前游戏目录</div>
           <div id="savesList" class="empty-hint" style="margin-top:8px">扫描中…</div>
+        </div>
+      </div>
+
+      <div id="modsPanel" style="display:none">
+        <div class="card">
+          <h3>📦 模组管理 <span id="modsVersionLabel" style="font-size:13px;color:var(--muted);font-weight:400"></span></h3>
+          <div class="sub">启用/禁用通过重命名实现（.jar ↔ .jar.disabled）。删除不可恢复，请谨慎操作。</div>
+          <div class="row" style="margin:12px 0">
+            <button id="refreshModsBtn">🔄 刷新</button>
+            <button id="openModsDirBtn">📂 打开 mods 目录</button>
+            <button id="closeModsBtn">← 返回</button>
+          </div>
+          <div id="modsCount" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+          <div id="modsList"></div>
+        </div>
+      </div>
+
+      <div id="loaderPanel" style="display:none">
+        <div class="card">
+          <h3>🧩 安装加载器（Fabric / Quilt / Forge）</h3>
+          <div class="sub">先安装对应版本的原版游戏，再安装加载器。加载器会自动生成可启动的版本。</div>
+          <div class="field">
+            <label>目标游戏版本（已安装的原版）</label>
+            <select id="loaderGameSelect" style="width:100%;background:var(--panel2);border:1px solid var(--border);
+              color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;outline:none"></select>
+          </div>
+          <div class="row" style="margin:14px 0 10px">
+            <button class="loaderTab primary" data-kind="fabric">Fabric</button>
+            <button class="loaderTab" data-kind="quilt">Quilt</button>
+            <button class="loaderTab" data-kind="forge">Forge</button>
+          </div>
+          <div class="field">
+            <label id="loaderVersionLabel">加载器版本</label>
+            <div id="loaderVersionList" class="chips" style="margin-bottom:4px">
+              <span style="font-size:12px;color:var(--muted)">先选择游戏版本</span>
+            </div>
+          </div>
+          <div class="row">
+            <button class="primary" id="installLoaderBtn" disabled>安装</button>
+            <button id="closeLoaderBtn">← 返回</button>
+          </div>
+          <div id="loaderProgress" class="logbox" style="height:140px;display:none;margin-top:12px"></div>
         </div>
       </div>
     </section>
@@ -379,9 +444,13 @@ function showView(name) {
   $('downloadPanel').style.display = name === 'download' ? 'flex' : 'none';
   $('settingsPanel').style.display = name === 'settings' ? 'block' : 'none';
   $('savesPanel').style.display = name === 'saves' ? 'block' : 'none';
+  $('modsPanel').style.display = name === 'mods' ? 'block' : 'none';
+  $('loaderPanel').style.display = name === 'loader' ? 'block' : 'none';
   if (name === 'detail') renderDetail();
   if (name === 'download') openDownload();
   if (name === 'settings') openSettings();
+  if (name === 'mods') renderMods();
+  if (name === 'loader') openLoaderPanel();
 }
 
 /* ---------- 左侧：已安装版本 ---------- */
@@ -476,6 +545,11 @@ function renderDetail() {
         <button class="primary" id="launchBtn">▶ 启动游戏</button>
         <button id="previewBtn">📋 查看启动命令</button>
       </div>
+      <div class="row" style="margin-top:10px">
+        <button id="modsBtn">📦 模组</button>
+        <button id="loaderBtn">🧩 安装加载器</button>
+        ${authLoggedIn ? '<button class="primary" id="launchMsBtn">🎮 正版启动</button>' : ''}
+      </div>
       <div id="cmdBox" style="display:none;margin-top:14px">
         <div style="font-size:12px;color:var(--muted);margin-bottom:6px">完整启动命令</div>
         <div id="cmdLog" class="logbox" style="height:150px"></div>
@@ -483,6 +557,9 @@ function renderDetail() {
     </div>`;
   $('launchBtn').onclick = launch;
   $('previewBtn').onclick = preview;
+  $('modsBtn').onclick = () => { currentModsVersion = selected ? selected.id : null; showView('mods'); };
+  $('loaderBtn').onclick = () => showView('loader');
+  if ($('launchMsBtn')) $('launchMsBtn').onclick = launchMs;
   $('cmdBox').style.display = 'none';
   fillDetailJava(selected.id);
 }
@@ -989,6 +1066,330 @@ $('saveSettingsBtn').onclick = async () => {
   setStatus('设置已保存');
 };
 
+
+/* ================= 模组管理 ================= */
+let currentModsVersion = null;
+let authLoggedIn = false;
+
+function escapeHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+async function renderMods() {
+  const list = $('modsList');
+  $('modsVersionLabel').textContent = currentModsVersion ? '(' + currentModsVersion + ')' : '';
+  if (!currentModsVersion) {
+    list.innerHTML = '<div class="empty-hint">先选择一个已安装版本</div>';
+    return;
+  }
+  list.innerHTML = '<div class="empty-hint">加载中…</div>';
+  try {
+    const mods = await invoke('list_mods', { gameDir });
+    const on = mods.filter((m) => m.enabled).length;
+    $('modsCount').textContent = mods.length
+      ? `共 ${mods.length} 个模组 · 启用 ${on} 个 · 禁用 ${mods.length - on} 个`
+      : '';
+    if (!mods.length) {
+      list.innerHTML = '<div class="empty-hint" style="padding:30px 0">mods 目录里还没有模组<br><br>把 .jar 文件放进 mods 目录，然后点「刷新」</div>';
+      return;
+    }
+    list.innerHTML = mods.map((m) => `
+      <div class="card" style="background:var(--panel2);margin-bottom:8px;padding:12px 14px;display:flex;gap:12px;align-items:center">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px">${escapeHtml(m.name)}${m.version ? ` <span style="color:var(--muted);font-weight:400">${escapeHtml(m.version)}</span>` : ''}</div>
+          <div style="font-size:12px;color:var(--muted);word-break:break-all">${escapeHtml(m.file_name)} · ${(m.size / 1048576).toFixed(1)} MB${m.loader !== 'unknown' ? ' · ' + escapeHtml(m.loader) : ''}</div>
+          ${m.description ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;max-height:36px;overflow:hidden">${escapeHtml(m.description)}</div>` : ''}
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap">
+          <input type="checkbox" class="modToggle" data-file="${escapeHtml(m.file_name)}" ${m.enabled ? 'checked' : ''}> 启用
+        </label>
+        <button class="modDel" data-del="${escapeHtml(m.file_name)}" style="background:#7f1d1d;border-color:#991b1b;white-space:nowrap">删除</button>
+      </div>`).join('');
+
+    list.querySelectorAll('.modToggle').forEach((el) => {
+      el.onchange = async () => {
+        try {
+          await invoke('toggle_mod', { gameDir, fileName: el.dataset.file, enabled: el.checked });
+          toast(el.checked ? '已启用' : '已禁用');
+          renderMods();
+        } catch (e) {
+          toast('操作失败：' + e, true);
+          el.checked = !el.checked;
+        }
+      };
+    });
+    list.querySelectorAll('.modDel').forEach((el) => {
+      el.onclick = async () => {
+        if (!confirm(`确定删除「${el.dataset.del}」？此操作不可恢复。`)) return;
+        try {
+          const n = await invoke('delete_mods', { gameDir, fileNames: [el.dataset.del] });
+          toast(`已删除 ${n} 个文件`);
+          renderMods();
+        } catch (e) {
+          toast('删除失败：' + e, true);
+        }
+      };
+    });
+  } catch (e) {
+    list.innerHTML = '<div class="empty-hint">读取模组失败：' + escapeHtml(e) + '</div>';
+  }
+}
+
+$('refreshModsBtn').onclick = () => renderMods();
+$('closeModsBtn').onclick = () => showView('detail');
+$('openModsDirBtn').onclick = async () => {
+  try { await invoke('open_mods_dir', { gameDir }); }
+  catch (e) { toast('打开目录失败：' + e, true); }
+};
+
+/* ================= 加载器安装 ================= */
+let loaderKind = 'fabric';
+let loaderGameVersion = '';
+let loaderPick = null;
+let loaderItems = [];
+
+/// 从已安装版本 id 里提取纯游戏版本号（如 "1.20.1-Forge" → "1.20.1"）
+function extractGameVersion(id) {
+  const m = String(id).match(/^(\d+\.\d+(?:\.\d+)?)/);
+  return m ? m[1] : null;
+}
+
+function loaderGameCandidates() {
+  const set = new Set();
+  const out = [];
+  // 1) 本地已安装版本对应的游戏版本优先
+  for (const v of installedList) {
+    const gv = extractGameVersion(v.id);
+    if (gv && !set.has(gv)) { set.add(gv); out.push(gv); }
+  }
+  // 2) 在线清单里的正式版（补全候选）
+  const releases = (manifest && manifest.versions ? manifest.versions : [])
+    .filter((v) => v.type === 'release')
+    .map((v) => v.id);
+  for (const id of releases) {
+    if (!set.has(id)) { set.add(id); out.push(id); }
+    if (out.length >= 60) break;
+  }
+  return out;
+}
+
+async function openLoaderPanel() {
+  const sel = $('loaderGameSelect');
+  // 确保清单加载好（在线正式版列表）
+  try { await ensureManifest(); } catch (e) { /* 离线时用已安装版本 */ }
+  const vers = loaderGameCandidates();
+  if (!vers.length) {
+    sel.innerHTML = '<option value="">（没有可选版本）</option>';
+    $('loaderVersionList').innerHTML = '<span style="font-size:12px;color:var(--muted)">需要联网获取版本列表</span>';
+    $('installLoaderBtn').disabled = true;
+    return;
+  }
+  const installedGv = new Set(installedList.map((v) => extractGameVersion(v.id)).filter(Boolean));
+  sel.innerHTML = vers.map((v) =>
+    `<option value="${escapeHtml(v)}">${escapeHtml(v)}${installedGv.has(v) ? '（已安装）' : ''}</option>`).join('');
+  loaderGameVersion = vers[0];
+  loaderPick = null;
+  loadLoaderVersionList();
+}
+
+async function loadLoaderVersionList() {
+  const listEl = $('loaderVersionList');
+  $('installLoaderBtn').disabled = true;
+  loaderPick = null;
+  listEl.innerHTML = '<span style="font-size:12px;color:var(--muted)">加载中…</span>';
+  try {
+    if (loaderKind === 'forge') {
+      loaderItems = await invoke('list_forge_versions', { gameVersion: loaderGameVersion });
+      if (!loaderItems.length) {
+        listEl.innerHTML = '<span style="font-size:12px;color:var(--muted)">这个游戏版本没有可用的 Forge</span>';
+        return;
+      }
+      listEl.innerHTML = loaderItems.slice(0, 30).map((v) =>
+        `<button class="chip loaderPick" data-ver="${escapeHtml(v)}">${escapeHtml(v.replace(loaderGameVersion + '-', ''))}</button>`).join('');
+    } else if (loaderKind === 'fabric') {
+      const arr = await invoke('list_fabric_loaders', { gameVersion: loaderGameVersion });
+      loaderItems = arr.map((x) => x.version);
+      if (!loaderItems.length) {
+        listEl.innerHTML = '<span style="font-size:12px;color:var(--muted)">这个游戏版本没有可用的 Fabric Loader</span>';
+        return;
+      }
+      listEl.innerHTML = loaderItems.slice(0, 30).map((v) =>
+        `<button class="chip loaderPick" data-ver="${escapeHtml(v)}">${escapeHtml(v)}</button>`).join('');
+    } else {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--muted)">Quilt 需要手动填写版本号（暂不支持列表）</span>';
+      return;
+    }
+    listEl.querySelectorAll('.loaderPick').forEach((el) => {
+      el.onclick = () => {
+        loaderPick = el.dataset.ver;
+        listEl.querySelectorAll('.loaderPick').forEach((x) => x.classList.remove('active'));
+        el.classList.add('active');
+        $('installLoaderBtn').disabled = false;
+      };
+    });
+  } catch (e) {
+    listEl.innerHTML = '<span style="font-size:12px;color:#f87171">加载失败：' + escapeHtml(e) + '</span>';
+  }
+}
+
+document.querySelectorAll('.loaderTab').forEach((btn) => {
+  btn.onclick = () => {
+    loaderKind = btn.dataset.kind;
+    document.querySelectorAll('.loaderTab').forEach((b) => b.classList.remove('primary'));
+    btn.classList.add('primary');
+    loadLoaderVersionList();
+  };
+});
+
+$('loaderGameSelect').onchange = (e) => {
+  loaderGameVersion = e.target.value;
+  loadLoaderVersionList();
+};
+
+$('closeLoaderBtn').onclick = () => showView('detail');
+
+function loaderLog(msg) {
+  const box = $('loaderProgress');
+  box.style.display = 'block';
+  const div = document.createElement('div');
+  div.textContent = msg;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+$('installLoaderBtn').onclick = async () => {
+  if (!loaderPick) return;
+  const box = $('loaderProgress');
+  box.innerHTML = '';
+  box.style.display = 'block';
+  $('installLoaderBtn').disabled = true;
+  setStatus('正在安装加载器…', true);
+  try {
+    const ch = new Channel();
+    ch.onmessage = (msg) => loaderLog(msg);
+    // 先确保原版已安装（加载器的 profile 依赖 inheritsFrom）
+    const vanillaJson = await invoke('check_vanilla_installed', { gameDir, gameVersion: loaderGameVersion });
+    if (!vanillaJson) {
+      loaderLog('原版 ' + loaderGameVersion + ' 还没安装，先下载…');
+      await invoke('download_version', { versionId: loaderGameVersion, gameDir, onProgress: ch });
+      loaderLog('✔ 原版下载完成');
+    }
+    let newId = '';
+    if (loaderKind === 'fabric') {
+      newId = await invoke('install_fabric', { gameDir, gameVersion: loaderGameVersion, loaderVersion: loaderPick, onProgress: ch });
+    } else if (loaderKind === 'forge') {
+      newId = await invoke('install_forge', { gameDir, forgeVersion: loaderPick, onProgress: ch });
+    } else {
+      newId = await invoke('install_quilt', { gameDir, gameVersion: loaderGameVersion, loaderVersion: loaderPick, onProgress: ch });
+    }
+    loaderLog('✅ 安装完成：' + newId);
+    setStatus('加载器安装完成');
+    await loadInstalled();
+  } catch (e) {
+    loaderLog('❌ ' + e);
+    toast('安装失败：' + e, true);
+    setStatus('安装失败');
+  } finally {
+    $('installLoaderBtn').disabled = false;
+  }
+};
+
+/* ================= 微软正版登录 ================= */
+let authPollTimer = null;
+
+async function renderAuthState() {
+  const el = $('authState');
+  try {
+    const st = await invoke('get_auth_state');
+    authLoggedIn = st.logged_in;
+    $('authClientId').value = st.client_id || '';
+    if (st.logged_in) {
+      el.innerHTML = `✅ 已登录：<b style="color:var(--text)">${escapeHtml(st.username)}</b>（正版账号）`;
+      $('msLoginBtn').style.display = 'none';
+      $('msLogoutBtn').style.display = '';
+    } else {
+      el.innerHTML = st.client_id_configured
+        ? '未登录。点「微软登录」获取一次性代码。'
+        : '未登录。<span style="color:#fbbf24">还没有配置 client_id</span>，需要先在下方填写 Azure 应用的 client ID。';
+      $('msLoginBtn').style.display = '';
+      $('msLogoutBtn').style.display = 'none';
+    }
+  } catch (e) {
+    el.textContent = '读取登录状态失败：' + e;
+  }
+}
+
+$('saveClientIdBtn').onclick = async () => {
+  try {
+    await invoke('save_auth_client_id', { clientId: $('authClientId').value.trim() });
+    toast('client_id 已保存');
+    renderAuthState();
+  } catch (e) { toast('保存失败：' + e, true); }
+};
+
+$('msLoginBtn').onclick = async () => {
+  clearInterval(authPollTimer);
+  $('deviceCodeBox').style.display = 'none';
+  try {
+    const dc = await invoke('start_ms_login');
+    $('deviceCodeBox').style.display = '';
+    $('deviceCodeUri').textContent = dc.verification_uri;
+    $('deviceCodeUri').href = dc.verification_uri;
+    $('deviceCodeValue').textContent = dc.user_code;
+    $('deviceCodeHint').textContent = '等待授权…（代码 ' + Math.round(dc.expires_in / 60) + ' 分钟内有效）';
+    $('msLoginBtn').disabled = true;
+    let intervalMs = Math.max(3, dc.interval) * 1000;
+    authPollTimer = setInterval(async () => {
+      try {
+        const r = await invoke('poll_ms_login', { deviceCode: dc.device_code });
+        if (r === 'pending') return;
+        if (r === 'slow') { intervalMs += 2000; return; }
+        if (r.startsWith('ready:')) {
+          clearInterval(authPollTimer);
+          $('deviceCodeHint').textContent = '✅ 登录成功，欢迎 ' + r.slice(6);
+          $('msLoginBtn').disabled = false;
+          toast('微软账号登录成功：' + r.slice(6));
+          await renderAuthState();
+          renderDetail();
+        }
+      } catch (e) {
+        clearInterval(authPollTimer);
+        $('msLoginBtn').disabled = false;
+        $('deviceCodeHint').textContent = '❌ ' + e;
+        toast('登录失败：' + e, true);
+      }
+    }, intervalMs);
+  } catch (e) {
+    $('deviceCodeBox').style.display = 'none';
+    $('msLoginBtn').disabled = false;
+    toast(e, true);
+  }
+};
+
+$('msLogoutBtn').onclick = async () => {
+  try {
+    await invoke('logout_ms');
+    toast('已退出微软账号');
+    await renderAuthState();
+    renderDetail();
+  } catch (e) { toast('退出失败：' + e, true); }
+};
+
+async function launchMs() {
+  if (!selected) return;
+  setStatus('正版启动中…', true);
+  try {
+    const msg = await invoke('launch_game_ms', { versionId: selected.id, gameDir });
+    setStatus('已启动');
+    toast(msg);
+  } catch (e) {
+    setStatus('启动失败');
+    toast('正版启动失败：' + e, true);
+  }
+}
+
 async function init() {
   try {
     const cfg = await invoke('get_config');
@@ -1001,6 +1402,7 @@ async function init() {
   }
   await loadInstalled();
   ensureManifest();          // 后台静默加载清单，补全已安装版本的正式版/快照版标签
+  renderAuthState();         // 读取微软登录状态
 }
 
 window.addEventListener('focus', () => {

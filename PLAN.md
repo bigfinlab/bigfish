@@ -21,18 +21,26 @@
 | 12 | 关于信息 | ✅ 完成 | 放在设置页底部：版本号、平台、组件、更新日志（内嵌 CHANGELOG.md） |
 | 13 | 跨平台（Win/Linux） | ✅ 完成 | **GitHub Actions 四平台全部构建成功**（2026-11-20，v0.1.0 tag：macOS arm64/x64、Linux、Windows，29m48s，4 个 artifact） |
 | 14 | 合规发布 | ✅ 完成 | MIT LICENSE、README 合规声明、.gitignore；已推送到 `github.com/bigfinlab/bigfish`（私有），tag v0.1.0 |
+| 15 | 版本继承合并 | ✅ 完成 | 递归解析 `inheritsFrom`，合并 libraries / arguments / jar / assetIndex，Forge/Fabric 版本可直接启动 |
+| 16 | 加载器自动安装 | ✅ 完成 | Fabric（Meta API，实测 1.20.1 进主菜单）、Quilt、Forge（installer）；缺原版自动补下载 |
+| 17 | 模组管理 | ✅ 完成 | 扫描/解析三种元数据格式、启用禁用（重命名）、删除、打开目录 |
+| 18 | 微软登录协议层 | ✅ 完成 | 设备码 OAuth → Xbox → XSTS → Minecraft → 档案；token 持久化 + 自动刷新；UI 完整。**缺 client_id**（个人账号无法注册 Azure 应用） |
 
-**完成度：13 / 14 ≈ 93%**（核心链路「下载 → 安装 → 离线登录 → 存档 → 启动 → 管理」已全部打通）
+**完成度：17 / 18 ≈ 94%**（核心链路「下载 → 安装 → 加载器 → 模组 → 离线/正版登录 → 存档 → 启动 → 管理」已全部打通；仅剩 client_id 配置与整合包管理）
 
 ## 🔧 技术现状
 
 ```
 bigfish/
-├── src/lib.rs        核心库（~1000 行）
+├── src/lib.rs        核心库（~1500 行）
 │   ├── 下载引擎：版本清单 / libraries / assets / sha1 / 镜像回退 / natives 解压
 │   ├── 启动引擎：arguments.jvm + arguments.game 解析、变量替换、JDK 21 检测、离线 UUID
 │   ├── 存档模块：NBT 解析、扫描、导入
-│   └── 配置模块：多游戏目录、用户设置
+│   ├── 配置模块：多游戏目录、用户设置、正版 client_id
+│   └── 版本继承：inheritsFrom 递归合并
+├── src/loader.rs     加载器安装（Fabric / Quilt / Forge）
+├── src/mods.rs       模组管理（三种元数据格式解析）
+├── src/auth.rs       微软正版登录（设备码 OAuth → Xbox → Minecraft）
 ├── src/main.rs       CLI（调试用）
 ├── src-tauri/        Tauri 2 桌面壳（~150 行 commands）
 └── ui/index.html     前端界面（暗色主题）
@@ -45,7 +53,9 @@ bigfish/
 
 ## 📅 剩下的任务（按价值）
 
-1. **微软正版登录**（最难）——OAuth 全链路，需要注册 Azure 应用
+1. **微软登录的 client_id** —— 协议层已写完整，只差一个 Azure 应用 ID（需要 Azure 订阅 / 学校邮箱 / M365 开发者计划之一）
+2. **整合包管理** —— Modrinth / CurseForge 整合包下载安装
+3. **启动器自动更新** —— 检查新版本并提示
 
 > 跨平台验证已完成：GitHub Actions 免费构建 macOS / Linux / Windows 四个包，见仓库 Actions 页面。
 

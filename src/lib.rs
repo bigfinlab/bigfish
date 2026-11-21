@@ -4,6 +4,10 @@
 
 use serde::{Deserialize, Serialize};
 
+pub mod auth;
+pub mod loader;
+pub mod mods;
+
 /// Mojang 官方版本清单
 pub const MOJANG_MANIFEST: &str = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 /// BMCLAPI 国内镜像（bangbang93 维护，HMCL/PCL 同款）
@@ -458,6 +462,42 @@ pub fn install_java(major: u8, on_progress: Progress) -> Result<JavaInfo, String
     Err("解压后没找到 java 可执行文件".to_string())
 }
 
+/// 启动身份：离线账号用 offline 构造，正版用 msa 构造
+#[derive(Debug, Clone)]
+pub struct LaunchAuth {
+    /// 玩家名（离线=自定义名，正版=档案名）
+    pub username: String,
+    /// 无横线 UUID（离线=offline_uuid 去横线，正版=profile.id）
+    pub uuid: String,
+    /// 访问令牌（离线固定 "0"）
+    pub access_token: String,
+    /// "legacy"（离线）或 "msa"（正版）
+    pub user_type: String,
+}
+
+impl LaunchAuth {
+    /// 离线模式
+    pub fn offline(username: &str) -> Self {
+        let uuid = offline_uuid(username).replace('-', "");
+        Self {
+            username: username.to_string(),
+            uuid,
+            access_token: "0".to_string(),
+            user_type: "legacy".to_string(),
+        }
+    }
+
+    /// 微软正版模式
+    pub fn microsoft(username: &str, uuid_no_dash: &str, mc_access_token: &str) -> Self {
+        Self {
+            username: username.to_string(),
+            uuid: uuid_no_dash.to_string(),
+            access_token: mc_access_token.to_string(),
+            user_type: "msa".to_string(),
+        }
+    }
+}
+
 /// 离线账号的 UUID：MD5("OfflinePlayer:" + name)，version=3 / variant=2
 pub fn offline_uuid(name: &str) -> String {
     let digest = md5::compute(format!("OfflinePlayer:{name}"));
@@ -778,9 +818,21 @@ fn build_classpath(root: &std::path::Path, version_id: &str, v: &serde_json::Val
                 continue;
             }
             if let Some(path) = lib["downloads"]["artifact"]["path"].as_str() {
+                // 标准 Mojang 版本格式
                 let p = root.join("libraries").join(path).display().to_string();
                 if !cp.contains(&p) {
                     cp.push(p);
+                }
+            } else if let Some(name) = lib["name"].as_str() {
+                // Fabric/Quilt profile 用 maven 坐标，没有 downloads 字段
+                if let Some(rel) = crate::loader::maven_path(name) {
+                    let p = root.join("libraries").join(rel);
+                    if p.exists() {
+                        let s = p.display().to_string();
+                        if !cp.contains(&s) {
+                            cp.push(s);
+                        }
+                    }
                 }
             }
         }
@@ -793,13 +845,14 @@ fn build_launch_args(
     root: &std::path::Path,
     version_id: &str,
     v: &serde_json::Value,
-    username: &str,
+    auth: &LaunchAuth,
 ) -> (Vec<String>, Vec<String>, std::path::PathBuf) {
-    let natives = find_natives_dir(root, version_id);
+    let jar_id = v["jar"].as_str().unwrap_or(version_id);
+    let natives = find_natives_dir(root, jar_id);
     let cp = build_classpath(root, version_id, v);
     let sep = if cfg!(windows) { ";" } else { ":" };
     let cp_joined = cp.join(sep);
-    let uuid = offline_uuid(username);
+    let uuid = auth.uuid.clone();
     let asset_index = v["assetIndex"]["id"].as_str().unwrap_or(version_id);
     let main_class = v["mainClass"].as_str().unwrap_or("net.minecraft.client.main.Main");
 
@@ -810,17 +863,17 @@ fn build_launch_args(
         ("classpath", ""),
         ("classpath_separator", sep),
         ("library_directory", ""),
-        ("auth_player_name", username),
+        ("auth_player_name", auth.username.as_str()),
         ("version_name", version_id),
         ("game_directory", ""),
         ("assets_root", ""),
         ("assets_index_name", asset_index),
-        ("auth_uuid", &uuid),
-        ("auth_access_token", "0"),
-        ("auth_session", "0"),
+        ("auth_uuid", uuid.as_str()),
+        ("auth_access_token", auth.access_token.as_str()),
+        ("auth_session", auth.access_token.as_str()),
         ("auth_xuid", ""),
         ("clientid", "0"),
-        ("user_type", "legacy"),
+        ("user_type", auth.user_type.as_str()),
         ("version_type", "release"),
         ("user_properties", "{}"),
         ("resolution_width", "854"),
@@ -868,15 +921,132 @@ fn build_launch_args(
     (jvm_args, cleaned, natives)
 }
 
+// ============================================================
+// 版本继承解析（Forge/Fabric/NeoForge 版本 JSON 依赖 inheritsFrom）
+// ============================================================
+
+/// 递归解析版本 JSON，处理 inheritsFrom 继承链，返回合并后的完整版本
+pub fn resolve_version(game_dir: &str, version_id: &str) -> Result<serde_json::Value, String> {
+    let root = std::path::Path::new(game_dir);
+    resolve_version_inner(root, version_id, 0)
+}
+
+fn resolve_version_inner(
+    root: &std::path::Path,
+    version_id: &str,
+    depth: u32,
+) -> Result<serde_json::Value, String> {
+    if depth > 8 {
+        return Err(format!("版本继承链过深（循环依赖？）: {version_id}"));
+    }
+    let path = root
+        .join("versions")
+        .join(version_id)
+        .join(format!("{version_id}.json"));
+    let body = std::fs::read_to_string(&path)
+        .map_err(|e| format!("读不到版本「{version_id}」的 JSON: {e}（先下载该版本）"))?;
+    let mut v: serde_json::Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+    if let Some(parent_id) = v["inheritsFrom"].as_str().map(|s| s.to_string()) {
+        let parent = resolve_version_inner(root, &parent_id, depth + 1)?;
+        v = merge_parent_version(parent, v, &parent_id);
+    }
+    Ok(v)
+}
+
+/// 把父版本合并进子版本（子版本字段优先）
+fn merge_parent_version(
+    parent: serde_json::Value,
+    mut child: serde_json::Value,
+    parent_id: &str,
+) -> serde_json::Value {
+    // jar 字段：决定用哪个 client.jar。子版本没写就继承父版本（或父 id）
+    if child.get("jar").is_none() || child["jar"].is_null() {
+        let jar = parent
+            .get("jar")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| parent_id.to_string());
+        child["jar"] = serde_json::Value::String(jar);
+    }
+
+    // libraries：父在前、子在后；同名时子版本覆盖父版本
+    let mut libs: Vec<serde_json::Value> = parent
+        .get("libraries")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+    if let Some(child_libs) = child.get("libraries").and_then(|v| v.as_array()) {
+        for cl in child_libs {
+            let name = cl["name"].as_str().unwrap_or("");
+            libs.retain(|p| p["name"].as_str() != Some(name));
+            libs.push(cl.clone());
+        }
+    }
+    child["libraries"] = serde_json::Value::Array(libs);
+
+    // arguments：jvm / game 都按「父在前、子在后」拼接
+    let mut args = serde_json::Map::new();
+    for key in ["jvm", "game"] {
+        let mut merged: Vec<serde_json::Value> = Vec::new();
+        if let Some(p) = parent
+            .get("arguments")
+            .and_then(|a| a.get(key))
+            .and_then(|v| v.as_array())
+        {
+            merged.extend(p.iter().cloned());
+        }
+        if let Some(c) = child
+            .get("arguments")
+            .and_then(|a| a.get(key))
+            .and_then(|v| v.as_array())
+        {
+            merged.extend(c.iter().cloned());
+        }
+        if !merged.is_empty() {
+            args.insert(key.to_string(), serde_json::Value::Array(merged));
+        }
+    }
+    if !args.is_empty() {
+        child["arguments"] = serde_json::Value::Object(args);
+    }
+
+    // 其余字段：子版本缺什么就继承什么
+    for key in [
+        "assetIndex",
+        "assets",
+        "downloads",
+        "javaVersion",
+        "type",
+        "releaseTime",
+        "time",
+        "minimumLauncherVersion",
+    ] {
+        let missing = child.get(key).map(|v| v.is_null()).unwrap_or(true);
+        if missing {
+            if let Some(pv) = parent.get(key) {
+                child[key] = pv.clone();
+            }
+        }
+    }
+    child
+}
+
 /// 启动游戏，返回子进程 pid（支持带完整 arguments 的版本，如 Forge）
 pub fn launch_version(version_id: &str, game_dir: &str, username: &str) -> Result<u32, String> {
-    let root = std::path::Path::new(game_dir).to_path_buf();
-    let ver_dir = root.join("versions").join(version_id);
-    let body = std::fs::read_to_string(ver_dir.join(format!("{version_id}.json")))
-        .map_err(|e| format!("读不到版本 JSON（先下载）: {e}"))?;
-    let v: serde_json::Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+    launch_version_with_auth(version_id, game_dir, &LaunchAuth::offline(username))
+}
 
-    let (jvm_args, game_args, _natives) = build_launch_args(&root, version_id, &v, username);
+/// 带身份启动（离线 / 微软正版）
+pub fn launch_version_with_auth(
+    version_id: &str,
+    game_dir: &str,
+    auth: &LaunchAuth,
+) -> Result<u32, String> {
+    let root = std::path::Path::new(game_dir).to_path_buf();
+    // 解析 inheritsFrom 继承链（Forge/Fabric 等加载器版本需要）
+    let v = resolve_version(game_dir, version_id)?;
+
+    let (jvm_args, game_args, _natives) = build_launch_args(&root, version_id, &v, auth);
     let main_class = v["mainClass"].as_str().unwrap_or("net.minecraft.client.main.Main");
 
     // 按版本要求选 Java（1.16 及更早要 Java 8，1.17~1.20.4 要 17，1.20.5+ 要 21）
@@ -902,7 +1072,8 @@ pub fn launch_version(version_id: &str, game_dir: &str, username: &str) -> Resul
     }
     // 离线模式兜底：没有 java.library.path 时补
     if !jvm_args.iter().any(|a| a.starts_with("-Djava.library.path")) {
-        cmd.arg(format!("-Djava.library.path={}", find_natives_dir(&root, version_id).display()));
+        let jar_id = v["jar"].as_str().unwrap_or(version_id);
+        cmd.arg(format!("-Djava.library.path={}", find_natives_dir(&root, jar_id).display()));
     }
     cmd.arg(main_class);
     for a in &game_args {
@@ -915,12 +1086,18 @@ pub fn launch_version(version_id: &str, game_dir: &str, username: &str) -> Resul
 
 /// 生成启动命令预览（不启动）
 pub fn launch_preview(version_id: &str, game_dir: &str, username: &str) -> Result<String, String> {
+    launch_preview_with_auth(version_id, game_dir, &LaunchAuth::offline(username))
+}
+
+/// 带身份的启动预览
+pub fn launch_preview_with_auth(
+    version_id: &str,
+    game_dir: &str,
+    auth: &LaunchAuth,
+) -> Result<String, String> {
     let root = std::path::Path::new(game_dir).to_path_buf();
-    let ver_dir = root.join("versions").join(version_id);
-    let body = std::fs::read_to_string(ver_dir.join(format!("{version_id}.json")))
-        .map_err(|e| format!("读不到版本 JSON: {e}"))?;
-    let v: serde_json::Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
-    let (jvm_args, game_args, natives) = build_launch_args(&root, version_id, &v, username);
+    let v = resolve_version(game_dir, version_id)?;
+    let (jvm_args, game_args, natives) = build_launch_args(&root, version_id, &v, auth);
     let main_class = v["mainClass"].as_str().unwrap_or("net.minecraft.client.main.Main");
     let required = java_requirement(version_id, game_dir);
     let java = find_java_for(required)
@@ -1197,6 +1374,12 @@ pub struct LauncherConfig {
     /// 初始堆内存（MB）
     #[serde(default = "default_min_mem")]
     pub min_memory_mb: u64,
+    /// Azure 应用 client_id（微软正版登录用；空字符串表示未配置，只能用离线登录）
+    #[serde(default)]
+    pub auth_client_id: String,
+    /// 上次正版登录的玩家名（仅用于界面显示）
+    #[serde(default)]
+    pub auth_username: String,
 }
 
 fn default_max_mem() -> u64 { 3072 }
@@ -1211,6 +1394,8 @@ impl Default for LauncherConfig {
             current_dir: default_dir,
             max_memory_mb: default_max_mem(),
             min_memory_mb: default_min_mem(),
+            auth_client_id: String::new(),
+            auth_username: String::new(),
         }
     }
 }

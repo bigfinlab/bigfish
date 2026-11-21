@@ -33,13 +33,16 @@
 - [x] 内存分配：滑条调节，自动检测物理内存
 - [x] 版本管理：批量导出（支持符号链接）、两步确认删除
 - [x] 关于页：版本信息 + 内嵌更新日志
+- [x] **版本继承合并**：正确处理 `inheritsFrom` 链（Forge / Fabric / NeoForge 版本 JSON 依赖父版本库与参数）
+- [x] **加载器自动安装**：Fabric（Meta API）、Quilt、Forge（官方 installer）一键安装，缺原版时自动先下载
+- [x] **模组管理**：扫描 mods 目录、解析 `fabric.mod.json` / `mods.toml` / `mcmod.info`、启用/禁用（重命名）、删除
+- [x] **微软正版登录（协议层）**：设备码 OAuth → Xbox Live → XSTS → Minecraft 全链路已实现，UI 已就绪
 
 **未完成**
 
-- [ ] 微软正版登录（目前仅离线登录）
+- [ ] 微软正版登录的 `client_id`：需要开发者在 Azure 注册应用后填入（个人 Microsoft 账号无法直接注册应用，需 Azure 订阅/学校邮箱/M365 开发者计划）
+- [ ] 整合包（Modpack）管理：目前只有单个模组管理
 - [ ] Windows / Linux 实际构建验证（代码已适配，需要对应平台）
-- [ ] Forge / Fabric 自动安装
-- [ ] 模组与整合包管理
 - [ ] 启动器自动更新
 
 ## 💻 系统要求
