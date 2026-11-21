@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>更新日志 · 大肥鱼启动器 BigFish</title>
+<meta name="description" content="大肥鱼启动器 BigFish 的版本更新日志（Changelog）。">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #070a12; --card: rgba(255,255,255,0.045); --line: rgba(255,255,255,0.09);
+    --text: #e8ecf4; --muted: #94a3b8; --green: #34d399;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stars { position: fixed; inset: 0; z-index: -2; display: block; }
+  .bg-glow {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(60vw 50vh at 78% 8%, rgba(16,185,129,0.10), transparent 70%),
+                radial-gradient(50vw 40vh at 15% 90%, rgba(59,130,246,0.08), transparent 70%);
+  }
+  a { color: var(--green); text-decoration: none; }
+  a:hover { color: #6ee7b7; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: rgba(7,10,18,0.72); border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 17px; color: var(--text); }
+  .brand img { width: 34px; height: 34px; border-radius: 9px; }
+  .nav-links { display: flex; align-items: center; gap: 26px; font-size: 14.5px; }
+  .nav-links a { color: var(--muted); }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .nav-dl {
+    padding: 8px 18px; border-radius: 9px; font-weight: 600;
+    background: linear-gradient(135deg, #34d399, #059669); color: #04140d !important;
+  }
+  .nav-dl:hover { filter: brightness(1.08); }
+  @media (max-width: 720px) { .nav-links a:not(.nav-dl) { display: none; } }
+
+  header.page { padding: 140px 0 30px; text-align: center; }
+  header.page h1 { font-size: clamp(34px, 5vw, 48px); }
+  header.page p { color: var(--muted); margin-top: 12px; }
+
+  .timeline { position: relative; padding: 30px 0 60px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 20px; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(180deg, rgba(52,211,153,0.5), rgba(52,211,153,0.05));
+  }
+  .entry { position: relative; padding: 0 0 34px 56px; }
+  .entry::before {
+    content: ""; position: absolute; left: 12px; top: 10px; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--bg); border: 3px solid rgba(52,211,153,0.45);
+  }
+  .entry.latest::before { background: var(--green); border-color: var(--green); box-shadow: 0 0 18px rgba(52,211,153,0.7); }
+  .ver-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ver-head .ver { font-size: 24px; font-weight: 800; letter-spacing: .5px; }
+  .ver-head .date { font-size: 13.5px; color: #64748b; }
+  .badge {
+    font-size: 11.5px; padding: 2px 10px; border-radius: 20px; font-weight: 600;
+    background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.35);
+  }
+  .badge.old { background: rgba(148,163,184,0.1); color: #94a3b8; border-color: rgba(148,163,184,0.3); }
+  .entry .lead { color: #cbd5e1; margin-bottom: 14px; font-size: 15px; }
+  .entry .group { margin: 12px 0 4px; font-size: 13.5px; font-weight: 700; color: var(--green); letter-spacing: .5px; }
+  .entry ul { list-style: none; padding: 0; }
+  .entry li { position: relative; padding-left: 18px; color: var(--muted); font-size: 14.2px; margin: 5px 0; }
+  .entry li::before { content: "·"; position: absolute; left: 4px; color: rgba(52,211,153,0.8); font-weight: 700; }
+  .entry li b { color: #d1d5db; font-weight: 600; }
+  footer { border-top: 1px solid var(--line); padding: 36px 0 50px; font-size: 13px; color: #64748b; text-align: center; }
+  .foot-links { margin-bottom: 12px; display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; }
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.on { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="bg-glow"></div>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="./">
+      <img src="assets/logo.png" alt="BigFish">
+      <span>大肥鱼启动器</span>
+    </a>
+    <div class="nav-links">
+      <a href="./#features">功能</a>
+      <a href="./#screenshots">截图</a>
+      <a href="./#download">下载</a>
+      <a href="changelog.html" class="active">更新日志</a>
+      <a class="nav-dl" href="./#download">立即下载</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page">
+  <div class="wrap">
+    <h1>更新日志</h1>
+    <p>每个版本改了什么，都在这里</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="timeline" id="timeline">
+
+    <div class="entry latest reveal">
+      <div class="ver-head">
+        <span class="ver">v0.2.2</span>
+        <span class="date">2026-11-21</span>
+        <span class="badge">最新</span>
+      </div>
+      <p class="lead">Windows 安装包改为中文：安装向导界面为简体中文，文件名不再带 en-US 后缀。</p>
+      <div class="group">Windows 安装包</div>
+      <ul>
+        <li>MSI 安装程序语言设置为简体中文（zh-CN），安装向导全中文</li>
+        <li>文件名从 <b>BigFish_0.2.2_x64_en-US.msi</b> 变为 <b>BigFish_0.2.2_x64_zh-CN.msi</b></li>
+        <li>其他平台（macOS / Linux）产物不变</li>
+      </ul>
+    </div>
+
+    <div class="entry reveal">
+      <div class="ver-head">
+        <span class="ver">v0.2.1</span>
+        <span class="date">2026-11-21</span>
+      </div>
+      <p class="lead">全新品牌标识：黑白配色，更简洁、更专业。</p>
+      <div class="group">新 logo</div>
+      <ul>
+        <li>应用图标（macOS icns / Windows ico / 通用 png）全部更新为新的黑白「BF」标识</li>
+        <li>启动器界面左上角标题栏 logo 同步更新（不再使用 emoji 🐟，改为官方 logo 图片）</li>
+        <li>logo 从原先的卡通鲸鱼改为「BF」字母标——字母标识在不同尺寸下都更清晰、更易识别</li>
+      </ul>
+      <div class="group">其他</div>
+      <ul><li>版本号 0.2.0 → 0.2.1</li></ul>
+    </div>
+
+    <div class="entry reveal">
+      <div class="ver-head">
+        <span class="ver">v0.2.0</span>
+        <span class="date">2026-11-21</span>
+      </div>
+      <p class="lead">加载器自动化：不用再手装 Forge / Fabric，模组也能在启动器里管理。</p>
+      <div class="group">加载器自动安装</div>
+      <ul>
+        <li><b>Fabric / Quilt</b>：走官方 Meta API 生成版本 JSON 并下载依赖库（纯 Rust，不需要 Java）</li>
+        <li><b>Forge</b>：下载官方 installer jar，用本机 Java 执行 headless 安装</li>
+        <li>缺原版时自动先下载原版，再装加载器</li>
+      </ul>
+      <div class="group">版本继承合并</div>
+      <ul>
+        <li>新增 resolve_version：递归解析 inheritsFrom，合并父版本的 libraries / arguments / jar / assetIndex</li>
+        <li>修复 build_classpath 不认 maven 坐标格式的库（Fabric profile 没有 downloads 字段）</li>
+        <li>效果：Forge / Fabric / NeoForge 版本可以正确组装 classpath 并启动（实测 Fabric 0.20.1 + 1.20.1 进主菜单）</li>
+      </ul>
+      <div class="group">模组管理</div>
+      <ul>
+        <li>解析 fabric.mod.json（Fabric / Quilt）、META-INF/mods.toml、META-INF/neoforge.mods.toml、mcmod.info（旧版 Forge）</li>
+        <li>显示名称、版本、加载器、大小、简介</li>
+        <li>启用 / 禁用（重命名 .jar ↔ .jar.disabled）、删除、打开 mods 目录</li>
+      </ul>
+      <div class="group">微软正版登录（协议层）</div>
+      <ul>
+        <li>完整实现：设备码 OAuth → Xbox Live → XSTS → Minecraft → 玩家档案</li>
+        <li>token 持久化在 ~/.bigfish/auth.json，过期自动刷新</li>
+        <li>设置页新增「🎮 微软正版登录」，设备码直接显示在启动器里</li>
+        <li>需要 client_id：个人 Microsoft 账号无法注册 Azure 应用；没有时仍可正常离线登录</li>
+      </ul>
+      <div class="group">已知问题</div>
+      <ul>
+        <li>微软登录缺 client_id，暂时只能用离线登录</li>
+        <li>整合包（Modpack）管理尚未实现</li>
+        <li>启动器自动更新尚未实现</li>
+      </ul>
+    </div>
+
+    <div class="entry reveal">
+      <div class="ver-head">
+        <span class="ver">v0.1.0</span>
+        <span class="date">2026-11-15</span>
+        <span class="badge old">首个版本</span>
+      </div>
+      <p class="lead">首个可用版本，核心链路「下载 → 安装 → 登录 → 启动 → 管理」全部打通。</p>
+      <div class="group">启动</div>
+      <ul>
+        <li>版本下载：官方清单 + BMCLAPI 镜像回退，libraries / assets / natives 全自动</li>
+        <li>离线登录：正版 UUID 算法（MD5("OfflinePlayer:" + 名字)）</li>
+        <li>Forge 实例启动：解析 arguments.jvm / arguments.game，支持 BootstrapLauncher</li>
+      </ul>
+      <div class="group">Java</div>
+      <ul>
+        <li>按版本 JSON 的 javaVersion 自动匹配 Java（1.16 及更早 → 8，1.17~1.20.4 → 17，1.20.5+ → 21）</li>
+        <li>扫描系统 / Homebrew / BigFish 三处 Java 安装</li>
+        <li>缺失时从 Adoptium 一键下载 JRE（实测 Java 8：42MB / 16 秒）</li>
+      </ul>
+      <div class="group">界面</div>
+      <ul>
+        <li>左栏「已安装版本」，标 local + 加载器（forge / fabric / neoforge / vanilla）</li>
+        <li>下载页：搜索 + 全部 / 远古版 / 正式版 / 快照版分类，行内进度条</li>
+        <li>版本管理：批量勾选、导出、两步确认删除</li>
+        <li>内存分配滑块，自动检测物理内存并给推荐值</li>
+        <li>暗色主题，macOS 原生 .app 打包（双击启动）</li>
+      </ul>
+      <div class="group">存档</div>
+      <ul>
+        <li>NBT 解析 level.dat</li>
+        <li>扫描官方 / HMCL / PCL2 目录，一键导入存档</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-links">
+      <a href="./">首页</a>
+      <a href="https://github.com/bigfinlab/bigfish" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/bigfinlab/bigfish/releases" target="_blank" rel="noopener">下载</a>
+      <a href="https://afdian.com/a/bigfin" target="_blank" rel="noopener">爱发电</a>
+    </div>
+    <div>© 2026 BigFish · 以 MIT 许可证发布 · 非官方 Minecraft 启动器，与 Mojang Studios、Microsoft 无关联</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const cv = document.getElementById('stars');
+  const ctx = cv.getContext('2d');
+  let W, H, stars = [];
+  function resize() {
+    W = cv.width = innerWidth * devicePixelRatio;
+    H = cv.height = innerHeight * devicePixelRatio;
+    cv.style.width = innerWidth + 'px';
+    cv.style.height = innerHeight + 'px';
+    stars = Array.from({ length: Math.min(160, Math.floor(W * H / 14000)) }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: (Math.random() * 1.2 + 0.4) * devicePixelRatio,
+      a: Math.random() * 0.7 + 0.25, tw: Math.random() * Math.PI * 2, sp: Math.random() * 0.015 + 0.004
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      s.tw += s.sp;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,220,255,' + (s.a * (0.6 + 0.4 * Math.sin(s.tw))).toFixed(3) + ')';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  resize(); draw();
+  addEventListener('resize', resize);
+})();
+(function () {
+  const io = new IntersectionObserver((es) => {
+    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
