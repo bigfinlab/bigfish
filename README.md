@@ -1,5 +1,9 @@
 # 大肥鱼启动器（BigFish）
 
+[![最新版本](https://img.shields.io/github/v/release/bigfinlab/bigfish?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC&style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/latest)
+[![下载](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-macOS%20%7C%20Windows%20%7C%20Linux-2ea043?style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/latest)
+[![许可证](https://img.shields.io/github/license/bigfinlab/bigfish?label=%E8%AE%B8%E5%8F%AF%E8%AF%81&style=for-the-badge)](LICENSE)
+
 > 一个**非官方**的开源 Minecraft Java 版启动器 🐟
 >
 > 由 **BigFin** 和 DeepSeek「大肥鱼」一起做出来。
