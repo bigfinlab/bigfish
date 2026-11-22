@@ -78,14 +78,26 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            adb install -r out/BigFish-android-debug.apk
-            adb shell pm list packages | grep -i amethyst || true
-            adb shell monkey -p org.angelauramc.amethyst -c android.intent.category.LAUNCHER 1 || true
-            sleep 25
-            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || true
+            echo "=== adb devices ==="
+            adb devices
+            echo "=== install APK ==="
+            adb install -r "$GITHUB_WORKSPACE/out/BigFish-android-debug.apk" && echo "INSTALL_OK" || echo "INSTALL_FAILED"
+            echo "=== packages ==="
+            adb shell pm list packages | grep -i amethyst || echo "PACKAGE_NOT_FOUND"
+            echo "=== launch ==="
+            adb shell monkey -p org.angelauramc.amethyst -c android.intent.category.LAUNCHER 1 && echo "LAUNCH_OK" || echo "LAUNCH_FAILED"
+            sleep 30
+            echo "=== focus ==="
+            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || echo "NO_FOCUS_INFO"
             mkdir -p "$GITHUB_WORKSPACE/out"
-            adb exec-out screencap -p > "$GITHUB_WORKSPACE/out/emulator-screen.png" || true
-            adb logcat -d | tail -150 > "$GITHUB_WORKSPACE/out/emulator-logcat.txt" || true
+            echo "=== screencap ==="
+            if adb exec-out screencap -p > "$GITHUB_WORKSPACE/out/emulator-screen.png"; then
+              echo "SCREENSHOT_OK"
+            else
+              echo "SCREENSHOT_FAILED"
+            fi
+            file "$GITHUB_WORKSPACE/out/emulator-screen.png" 2>/dev/null || true
+            adb logcat -d > "$GITHUB_WORKSPACE/out/emulator-logcat.txt" || true
             ls -lh "$GITHUB_WORKSPACE/out/" || true
 
       - name: Upload emulator screenshot
@@ -96,6 +108,22 @@ jobs:
             out/emulator-screen.png
             out/emulator-logcat.txt
           if-no-files-found: warn
+
+
+      - name: Publish screenshot to GitHub Pages
+        if: always()
+        run: |
+          if [ -f "$GITHUB_WORKSPACE/out/emulator-screen.png" ]; then
+            cp "$GITHUB_WORKSPACE/out/emulator-screen.png" "$GITHUB_WORKSPACE/docs/emulator-screen.png"
+            cd "$GITHUB_WORKSPACE"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add docs/emulator-screen.png
+            git commit -m "ci: 更新安卓模拟器冒烟测试截图" || echo "nothing to commit"
+            git push || echo "push failed"
+          else
+            echo "截图文件不存在，跳过"
+          fi
 
       - name: Publish APK to Release
         uses: softprops/action-gh-release@v2
