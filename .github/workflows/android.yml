@@ -67,79 +67,20 @@ jobs:
           retention-days: 30
 
 
-      - name: Smoke test on Android Emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        continue-on-error: true
-        with:
-          api-level: 34
-          target: google_apis
-          arch: x86_64
-          profile: pixel_6
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: |
-            echo "=== adb devices ==="
-            adb devices
-            echo "=== install APK ==="
-            adb install -r "$GITHUB_WORKSPACE/out/BigFish-android-debug.apk" && echo "INSTALL_OK" || echo "INSTALL_FAILED"
-            echo "=== packages ==="
-            adb shell pm list packages | grep -i amethyst || echo "PACKAGE_NOT_FOUND"
-            echo "=== launch ==="
-            adb shell monkey -p org.angelauramc.amethyst -c android.intent.category.LAUNCHER 1 && echo "LAUNCH_OK" || echo "LAUNCH_FAILED"
-            sleep 30
-            echo "=== focus ==="
-            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || echo "NO_FOCUS_INFO"
-            mkdir -p "$GITHUB_WORKSPACE/out"
-            echo "=== screencap ==="
-            if adb exec-out screencap -p > "$GITHUB_WORKSPACE/out/emulator-screen.png"; then
-              echo "SCREENSHOT_OK"
-            else
-              echo "SCREENSHOT_FAILED"
-            fi
-            file "$GITHUB_WORKSPACE/out/emulator-screen.png" 2>/dev/null || true
-            adb logcat -d > "$GITHUB_WORKSPACE/out/emulator-logcat.txt" || true
-            ls -lh "$GITHUB_WORKSPACE/out/" || true
-
-      - name: Upload emulator screenshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: emulator-smoke-test
-          path: |
-            out/emulator-screen.png
-            out/emulator-logcat.txt
-          if-no-files-found: warn
-
-
-      - name: Publish screenshot to GitHub Pages
-        if: always()
-        run: |
-          if [ -f "$GITHUB_WORKSPACE/out/emulator-screen.png" ]; then
-            cp "$GITHUB_WORKSPACE/out/emulator-screen.png" "$GITHUB_WORKSPACE/docs/emulator-screen.png"
-            cd "$GITHUB_WORKSPACE"
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add docs/emulator-screen.png
-            git commit -m "ci: 更新安卓模拟器冒烟测试截图" || echo "nothing to commit"
-            git push || echo "push failed"
-          else
-            echo "截图文件不存在，跳过"
-          fi
-
       - name: Publish APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: android-beta-${{ github.run_number }}
-          name: "BigFish Android Beta #${{ github.run_number }}"
+          tag_name: android-v0.1.0
+          name: "大肥鱼安卓版 v0.1.0 · Android Beta"
           body: |
-            云端构建的安卓完整启动器（基于 Amethyst / PojavLauncher 后继，LGPL-3.0）。
-            
-            **功能**：Minecraft Java 版启动器 —— 版本下载、Forge/Fabric/Quilt 安装、微软/离线登录、触屏操作、内置 JRE。
-            **安装**：下载 APK 后允许"未知来源"安装；这是 debug 版（测试用）。
-            
+            **大肥鱼安卓版 v0.1.0**（Android Beta）—— 开源免费的 Minecraft Java 版启动器。
+
+            **功能**：版本下载、Forge / Fabric / Quilt 安装、微软 / 离线登录、触屏操作、内置 JRE。
+            **安装**：下载 APK 后允许「未知来源」安装。
+            **说明**：基于 Amethyst-Android（PojavLauncher 后继，LGPL-3.0）构建，保留上游版权声明。
+
             源码：https://github.com/bigfinlab/bigfish
+            官网：https://bigfinlab.github.io/bigfish/
             上游：https://github.com/AngelAuraMC/Amethyst-Android
-          files: |
-            out/BigFish-android-debug.apk
-            out/emulator-screen.png
-            out/emulator-logcat.txt
+          files: out/BigFish-android-debug.apk
           prerelease: true
