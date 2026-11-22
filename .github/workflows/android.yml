@@ -83,8 +83,10 @@ jobs:
             adb shell monkey -p org.angelauramc.amethyst -c android.intent.category.LAUNCHER 1 || true
             sleep 25
             adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || true
-            adb exec-out screencap -p > out/emulator-screen.png
-            adb logcat -d | tail -150 > out/emulator-logcat.txt || true
+            mkdir -p "$GITHUB_WORKSPACE/out"
+            adb exec-out screencap -p > "$GITHUB_WORKSPACE/out/emulator-screen.png" || true
+            adb logcat -d | tail -150 > "$GITHUB_WORKSPACE/out/emulator-logcat.txt" || true
+            ls -lh "$GITHUB_WORKSPACE/out/" || true
 
       - name: Upload emulator screenshot
         uses: actions/upload-artifact@v4
@@ -108,5 +110,8 @@ jobs:
             
             源码：https://github.com/bigfinlab/bigfish
             上游：https://github.com/AngelAuraMC/Amethyst-Android
-          files: out/BigFish-android-debug.apk
+          files: |
+            out/BigFish-android-debug.apk
+            out/emulator-screen.png
+            out/emulator-logcat.txt
           prerelease: true
