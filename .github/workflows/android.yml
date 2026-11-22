@@ -8,6 +8,9 @@ on:
       - '.github/workflows/android.yml'
       - '.github/android/**'
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     name: Android Debug APK
@@ -62,3 +65,19 @@ jobs:
           name: BigFish-android-debug
           path: out/BigFish-android-debug.apk
           retention-days: 30
+
+      - name: Publish APK to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-beta-${{ github.run_number }}
+          name: "BigFish Android Beta #${{ github.run_number }}"
+          body: |
+            云端构建的安卓完整启动器（基于 Amethyst / PojavLauncher 后继，LGPL-3.0）。
+            
+            **功能**：Minecraft Java 版启动器 —— 版本下载、Forge/Fabric/Quilt 安装、微软/离线登录、触屏操作、内置 JRE。
+            **安装**：下载 APK 后允许"未知来源"安装；这是 debug 版（测试用）。
+            
+            源码：https://github.com/bigfinlab/bigfish
+            上游：https://github.com/AngelAuraMC/Amethyst-Android
+          files: out/BigFish-android-debug.apk
+          prerelease: true
