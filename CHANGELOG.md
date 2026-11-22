@@ -1,3 +1,24 @@
+## Android v0.1.0 — 2026-11-22
+
+首个安卓版（Beta）发布 —— 基于 Amethyst-Android（PojavLauncher 后继，LGPL-3.0）品牌化构建的完整 Minecraft Java 版启动器。
+
+### 功能
+
+- 完整启动 Minecraft Java 版（版本下载 / Forge / Fabric / Quilt 安装 / 微软与离线登录 / 触屏操作 / 内置 JRE）
+- 应用名「大肥鱼」、黑白 BF 全套图标（mdpi ~ xxxhdpi，方形 + 圆形）
+- 版本号 0.1.0（BigFish Android 首发版）
+- 保留 Amethyst / PojavLauncher 上游版权声明（LGPL-3.0 要求）
+
+### 构建
+
+- 通过 GitHub Actions 云端构建（`android.yml`），产物 `BigFish-android-debug.apk`（160.7 MB，debug 签名）
+- Release: https://github.com/bigfinlab/bigfish/releases/tag/android-v0.1.0
+
+### 已知限制
+
+- Beta 测试版（debug 签名），未在真机充分验证
+- 独立 Amethyst 品牌化构建，不含桌面版 Tauri 界面
+
 ## 0.2.2 — 2026-11-21
 
 Windows 安装包改为中文：安装向导界面为简体中文，文件名不再带 `en-US` 后缀。

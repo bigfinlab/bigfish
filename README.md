@@ -3,6 +3,7 @@
 [![最新版本](https://img.shields.io/github/v/release/bigfinlab/bigfish?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC&style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/latest)
 [![下载](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-macOS%20%7C%20Windows%20%7C%20Linux-2ea043?style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/latest)
 [![许可证](https://img.shields.io/github/license/bigfinlab/bigfish?label=%E8%AE%B8%E5%8F%AF%E8%AF%81&style=for-the-badge)](LICENSE)
+[![Android](https://img.shields.io/badge/Android-Beta-3ddc84?style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.1.0)
 
 > 一个**非官方**的开源 Minecraft Java 版启动器 🐟
 >
@@ -45,6 +46,15 @@
 - [ ] Windows / Linux 实际构建验证（代码已适配，需要对应平台）
 - [ ] 启动器自动更新
 
+**📱 Android 版（Beta）**
+
+安卓完整启动器已发布 **v0.1.0 Beta**：基于 [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)（PojavLauncher 后继，LGPL-3.0）构建，支持完整启动 Minecraft Java 版 —— 版本下载、Forge / Fabric / Quilt 安装、微软 / 离线登录、触屏操作、内置 JRE。
+
+- 下载：[BigFish-android-debug.apk](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.1.0)（160.7 MB，debug 签名，测试版）
+- 安装：允许「未知来源」安装；首次启动按提示下载运行库
+- 说明：Android 版是独立的 Amethyst 品牌化构建（不含桌面版 Tauri 界面），保留上游版权声明
+- 后续：正式签名版、真机验证中
+
 ## 💻 系统要求
 
 | 平台 | 状态 | 说明 |
@@ -56,6 +66,10 @@
 游戏本身还需要 Java：1.16 及更早要 Java 8，1.17~1.20.4 要 Java 17，1.20.5+ 要 Java 21。**启动器会自动检测并下载**，不需要你手动装。
 
 ## 📦 安装
+
+**Android**
+
+下载 `BigFish-android-debug.apk`（见上方 Android Beta 说明），在手机上打开并允许「未知来源」安装。
 
 **macOS**
 
