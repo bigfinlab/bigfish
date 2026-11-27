@@ -1,3 +1,14 @@
+## Android v0.2.2 — 2026-11-27
+
+- **横屏两栏布局**：左侧「已安装版本」列表（ListView，直接点击切换，当前版本高亮）+ 右侧功能面板，对齐桌面版布局
+- 竖屏保持单列；手机横屏 / 平板自动切换两栏
+- 版本号 0.2.2（versionCode 4）
+
+### 构建
+
+- 新增 `ui/layout-land/fragment_launcher.xml`（横屏两栏布局）
+- `patch-ui.py` 增加 MainMenuFragment 版本列表绑定（ProfileAdapter + 点击切换）
+
 ## Android v0.2.1 — 2026-11-27
 
 - **全新 BigFish 风格主界面**：深蓝星空渐变背景、BF logo 品牌区、圆角卡片按钮、绿色启动键（与桌面版视觉统一）

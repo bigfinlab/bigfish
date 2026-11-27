@@ -34,8 +34,8 @@ echo "  保留 Amethyst 版权声明（LGPL 要求）"
 echo "== [4/7] 版本号 = 0.2.1（BigFish Android 界面改造版）=="
 GRADLE="$AMETHYST/app_pojavlauncher/build.gradle"
 if [ -f "$GRADLE" ]; then
-  sed -i 's|versionName getVersionName()|versionName "0.2.1"|' "$GRADLE"
-  sed -i 's|versionCode 10000000|versionCode 3|' "$GRADLE"
+  sed -i 's|versionName getVersionName()|versionName "0.2.2"|' "$GRADLE"
+  sed -i 's|versionCode 10000000|versionCode 4|' "$GRADLE"
   grep -E 'versionName|versionCode' "$GRADLE" | head -3
 fi
 

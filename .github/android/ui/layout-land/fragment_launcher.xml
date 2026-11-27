@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BigFish 横屏两栏布局：左侧版本列表 + 右侧功能面板（对齐桌面版） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/fragment_menu_main"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="horizontal"
+	android:background="@color/background_app">
+
+	<!-- ========== 左侧栏：品牌 + 版本列表 ========== -->
+	<LinearLayout
+		android:layout_width="320dp"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:background="@color/background_bottom_bar"
+		android:padding="16dp">
+
+		<ImageView
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:src="@drawable/logo_bigfish"
+			android:contentDescription="@string/app_name" />
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="8dp"
+			android:text="@string/app_name"
+			android:textColor="@color/primary_text"
+			android:textSize="20sp"
+			android:textStyle="bold" />
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="2dp"
+			android:text="Minecraft Java 版启动器"
+			android:textColor="@color/secondary_text"
+			android:textSize="11sp" />
+
+		<View
+			android:layout_width="match_parent"
+			android:layout_height="1dp"
+			android:layout_marginTop="14dp"
+			android:layout_marginBottom="10dp"
+			android:background="#243450" />
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="6dp"
+			android:text="已安装版本"
+			android:textColor="@color/secondary_text"
+			android:textSize="12sp" />
+
+		<!-- 版本列表（ProfileAdapter 填充，点击切换当前版本） -->
+		<android.widget.ListView
+			android:id="@+id/version_list"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			android:divider="@null"
+			android:dividerHeight="4dp"
+			android:background="@android:color/transparent"
+			android:scrollbars="none" />
+
+		<!-- 当前版本 + 编辑按钮 -->
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="10dp"
+			android:orientation="horizontal"
+			android:gravity="center_vertical">
+
+			<com.kdt.mcgui.mcVersionSpinner
+				android:id="@+id/mc_version_spinner"
+				android:layout_width="0dp"
+				android:layout_height="48dp"
+				android:layout_weight="1"
+				android:background="@drawable/bg_menu_button"
+				android:paddingStart="12dp"
+				android:paddingEnd="12dp"
+				android:gravity="center_vertical"
+				android:textColor="@color/primary_text"
+				android:textSize="13sp"
+				android:drawableEnd="@drawable/spinner_arrow"
+				app:drawableEndSize="18dp"
+				app:drawableStartIntegerScaling="true"
+				app:drawableStartSize="26dp"
+				app:drawableEndPadding="4dp" />
+
+			<ImageButton
+				android:id="@+id/edit_profile_button"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_marginStart="8dp"
+				android:background="@drawable/bg_menu_button"
+				android:src="@drawable/ic_edit_profile"
+				android:contentDescription="编辑版本" />
+		</LinearLayout>
+	</LinearLayout>
+
+	<!-- ========== 右侧主区：功能入口 + 启动键 ========== -->
+	<LinearLayout
+		android:layout_width="0dp"
+		android:layout_height="match_parent"
+		android:layout_weight="1"
+		android:orientation="vertical"
+		android:padding="24dp">
+
+		<Space
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1" />
+
+		<!-- 第一行：WIKI / DISCORD -->
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/news_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:layout_height="58dp"
+				android:layout_weight="1"
+				android:text="@string/mcl_tab_wiki"
+				android:drawableStart="@drawable/ic_menu_news" />
+
+			<Space
+				android:layout_width="12dp"
+				android:layout_height="1dp" />
+
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/discord_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:layout_height="58dp"
+				android:layout_weight="1"
+				android:text="@string/mcl_button_discord"
+				android:drawableStart="@drawable/ic_discord" />
+		</LinearLayout>
+
+		<Space
+			android:layout_width="match_parent"
+			android:layout_height="12dp" />
+
+		<!-- 第二行：自定义控制键 / 执行 JAR -->
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/custom_control_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:layout_height="58dp"
+				android:layout_weight="1"
+				android:text="@string/mcl_option_customcontrol"
+				android:drawableStart="@drawable/ic_menu_custom_controls" />
+
+			<Space
+				android:layout_width="12dp"
+				android:layout_height="1dp" />
+
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/install_jar_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:layout_height="58dp"
+				android:layout_weight="1"
+				android:text="@string/main_install_jar_file"
+				android:drawableStart="@drawable/ic_menu_install_jar" />
+		</LinearLayout>
+
+		<Space
+			android:layout_width="match_parent"
+			android:layout_height="12dp" />
+
+		<!-- 第三行：分享日志 / 打开游戏文件夹 -->
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/share_logs_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:layout_height="58dp"
+				android:layout_weight="1"
+				android:text="@string/main_share_logs"
+				android:drawableStart="@android:drawable/ic_menu_share" />
+
+			<Space
+				android:layout_width="12dp"
+				android:layout_height="1dp" />
+
+			<com.kdt.mcgui.LauncherMenuButton
+				android:id="@+id/open_files_button"
+				style="@style/LauncherMenuButton.Universal"
+				android:layout_width="0dp"
+				android:layout_height="58dp"
+				android:layout_weight="1"
+				android:text="@string/mcl_button_open_directory"
+				android:drawableStart="@drawable/ic_folder" />
+		</LinearLayout>
+
+		<Space
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1" />
+
+		<com.kdt.mcgui.MineButton
+			android:id="@+id/play_button"
+			android:layout_width="match_parent"
+			android:layout_height="64dp"
+			android:textAllCaps="true"
+			android:text="@string/main_play" />
+	</LinearLayout>
+</LinearLayout>
