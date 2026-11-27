@@ -9,13 +9,13 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 RES="$AMETHYST/app_pojavlauncher/src/main/res"
 STRINGS="$RES/values/strings.xml"
 
-echo "== [1/6] 应用名 =="
+echo "== [1/7] 应用名 =="
 sed -i 's|<string name="app_name" translatable="false">Amethyst</string>|<string name="app_name" translatable="false">大肥鱼</string>|' "$STRINGS"
 sed -i 's|<string name="app_short_name" translatable="false">Amethyst</string>|<string name="app_short_name" translatable="false">大肥鱼</string>|' "$STRINGS"
 grep -o '<string name="app_name"[^>]*>[^<]*</string>' "$STRINGS" || true
 grep -o '<string name="app_short_name"[^>]*>[^<]*</string>' "$STRINGS" || true
 
-echo "== [2/6] 替换图标（删除 adaptive icon xml，让系统用普通图标）=="
+echo "== [2/7] 替换图标（删除 adaptive icon xml，让系统用普通图标）=="
 rm -f "$RES"/mipmap-anydpi-v26/ic_launcher.xml "$RES"/mipmap-anydpi-v26/ic_launcher_round.xml
 for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
   dir="$RES/mipmap-$d"
@@ -26,16 +26,16 @@ for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
   echo "  mipmap-$d ✓"
 done
 
-echo "== [3/6] 关于页/文案（保留 Amethyst 版权署名，不全局替换）=="
+echo "== [3/7] 关于页/文案（保留 Amethyst 版权署名，不全局替换）=="
 # 注意：LGPL-3.0 要求保留上游版权声明，绝不全局替换 "Amethyst"。
 # 只改启动器显示名（app_name / app_short_name），致谢页保留原署名。
 echo "  保留 Amethyst 版权声明（LGPL 要求）"
 
-echo "== [4/7] 版本号 = 0.2.1（BigFish Android 界面改造版）=="
+echo "== [4/7] 版本号 = 0.2.3（BigFish 模组管理版）=="
 GRADLE="$AMETHYST/app_pojavlauncher/build.gradle"
 if [ -f "$GRADLE" ]; then
-  sed -i 's|versionName getVersionName()|versionName "0.2.2"|' "$GRADLE"
-  sed -i 's|versionCode 10000000|versionCode 4|' "$GRADLE"
+  sed -i 's|versionName getVersionName()|versionName "0.2.3"|' "$GRADLE"
+  sed -i 's|versionCode 10000000|versionCode 5|' "$GRADLE"
   grep -E 'versionName|versionCode' "$GRADLE" | head -3
 fi
 
@@ -58,7 +58,7 @@ fi
 echo "== [6/7] 渲染引擎设置 + 启动注入补丁 =="
 python3 "$ROOT/patch-vulkan.py" "$AMETHYST"
 
-echo "== [7/7] BigFish 界面改造 + 离线登录修复 =="
+echo "== [7/7] BigFish 界面 + 离线登录 + 模组管理 =="
 python3 "$ROOT/patch-ui.py" "$AMETHYST"
 
 echo "品牌化完成 ✅"

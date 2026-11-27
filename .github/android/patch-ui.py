@@ -11,10 +11,13 @@
    - colors.xml 深蓝黑 + 绿色启动键、bg_starry.xml、bg_menu_button.xml、logo_bigfish.png
 3. 主题配色：深蓝黑 + 绿色启动按钮（和桌面版一致）
 4. 主菜单版本列表绑定：MainMenuFragment 给 ListView 设置 ProfileAdapter（仅横屏布局存在）
-5. 校验：两套布局都必须保留原有 view id（否则 MainMenuFragment 会 NPE）
+5. 离线用户解锁功能：去掉「打开游戏文件夹」「安装 JAR」对微软正版账号的依赖
+6. 模组管理：新增 BigFishModManagerFragment（列出 mods 目录、启用/停用/删除/打开文件夹），
+   主界面「模组管理」按钮（原 WIKI 按钮位）进入
+7. 校验：两套布局都必须保留原有 view id（否则 MainMenuFragment 会 NPE）
 
 依赖 ui/ 目录：fragment_launcher.xml / layout-land/fragment_launcher.xml / colors.xml /
-bg_starry.xml / bg_menu_button.xml / logo_bigfish.png
+bg_starry.xml / bg_menu_button.xml / logo_bigfish.png / layout/*.xml / fragments/*.java
 """
 import os
 import shutil
@@ -40,7 +43,7 @@ def write(path, content):
 
 
 def patch_local_login():
-    print('[1/5] 离线登录修复...')
+    print('[1/7] 离线登录修复...')
     # 1) SelectAuthFragment：本地按钮直接跳本地登录
     path = os.path.join(JAVA, 'fragments/SelectAuthFragment.java')
     src = read(path)
@@ -73,7 +76,7 @@ def patch_local_login():
 
 
 def copy_ui_assets():
-    print('[2/5] 复制 BigFish 界面资源...')
+    print('[2/7] 复制 BigFish 界面资源...')
     layout_dir = os.path.join(RES, 'layout')
     layout_land_dir = os.path.join(RES, 'layout-land')
     drawable_dir = os.path.join(RES, 'drawable')
@@ -105,9 +108,24 @@ def copy_ui_assets():
     shutil.copy(os.path.join(UI, 'logo_bigfish.png'), os.path.join(nodpi_dir, 'logo_bigfish.png'))
     print('  ✓ drawable-nodpi/logo_bigfish.png')
 
+    # 模组管理界面的布局（fragment + item）
+    layout_ui_dir = os.path.join(UI, 'layout')
+    for name in sorted(os.listdir(layout_ui_dir)):
+        if name.endswith('.xml'):
+            shutil.copy(os.path.join(layout_ui_dir, name), os.path.join(layout_dir, name))
+            print(f'  ✓ layout/{name}')
+
+    # 模组管理 Fragment 的 Java 源码
+    fragments_dir = os.path.join(JAVA, 'fragments')
+    java_ui_dir = os.path.join(UI, 'fragments')
+    for name in sorted(os.listdir(java_ui_dir)):
+        if name.endswith('.java'):
+            shutil.copy(os.path.join(java_ui_dir, name), os.path.join(fragments_dir, name))
+            print(f'  ✓ fragments/{name}')
+
 
 def patch_styles():
-    print('[3/5] 调整按钮样式...')
+    print('[3/7] 调整按钮样式...')
     path = os.path.join(RES, 'values/styles.xml')
     src = read(path)
     old = ('<style name="LauncherMenuButton" parent="Widget.AppCompat.Button">\n'
@@ -127,7 +145,7 @@ def patch_styles():
 
 
 def patch_main_menu():
-    print('[4/5] 主菜单版本列表绑定...')
+    print('[4/7] 主菜单版本列表绑定...')
     path = os.path.join(JAVA, 'fragments/MainMenuFragment.java')
     src = read(path)
     anchor = 'mVersionSpinner = view.findViewById(R.id.mc_version_spinner);'
@@ -152,8 +170,66 @@ def patch_main_menu():
     print('  ✓ MainMenuFragment 已绑定版本列表（横屏）')
 
 
+def patch_offline_and_mods():
+    print('[5/7] 离线用户解锁功能 + 模组管理入口...')
+    path = os.path.join(JAVA, 'fragments/MainMenuFragment.java')
+    src = read(path)
+
+    # 1) 主界面「模组管理」按钮（复用原 WIKI 按钮位）→ 打开 BigFishModManagerFragment
+    old = '        mNewsButton.setOnClickListener(v -> Tools.openURL(requireActivity(), Tools.URL_HOME));'
+    new = ('        // BigFish: WIKI button replaced with the mod manager entry\n'
+           '        mNewsButton.setOnClickListener(v -> Tools.swapFragment(requireActivity(), '
+           'BigFishModManagerFragment.class, BigFishModManagerFragment.TAG, null));')
+    if old not in src:
+        failures.append('MainMenuFragment: 模组管理入口锚点未找到（上游可能已改）')
+        print('  ⚠️ 模组管理入口锚点未找到')
+    else:
+        src = src.replace(old, new, 1)
+        print('  ✓ 主界面按钮 → 模组管理')
+
+    # 2) 安装 JAR：不再要求微软正版账号（离线账号也能装）
+    old = (
+        '        if (hasOnlineProfile()) {\n'
+        '            mInstallJarButton.setOnClickListener(v -> runInstallerWithConfirmation(false));\n'
+        '            mInstallJarButton.setOnLongClickListener(v -> {\n'
+        '                runInstallerWithConfirmation(true);\n'
+        '                return true;\n'
+        '            });\n'
+        '        } else mInstallJarButton.setOnClickListener(v -> hasNoOnlineProfileDialog(requireActivity()));'
+    )
+    new = (
+        '        mInstallJarButton.setOnClickListener(v -> runInstallerWithConfirmation(false));\n'
+        '        mInstallJarButton.setOnLongClickListener(v -> {\n'
+        '            runInstallerWithConfirmation(true);\n'
+        '            return true;\n'
+        '        });'
+    )
+    if old not in src:
+        failures.append('MainMenuFragment: 安装 JAR 账号限制锚点未找到（上游可能已改）')
+        print('  ⚠️ 安装 JAR 账号限制锚点未找到')
+    else:
+        src = src.replace(old, new, 1)
+        print('  ✓ 安装 JAR 不再要求微软账号')
+
+    # 3) 打开游戏文件夹：不再要求微软正版账号
+    old = (
+        '            } else if (!hasOnlineProfile()) { // Otherwise display the generic pop-up to log in\n'
+        '                hasNoOnlineProfileDialog(requireActivity());\n'
+        '            } else openPath(v.getContext(), getCurrentProfileDirectory(), false);'
+    )
+    new = '            } else openPath(v.getContext(), getCurrentProfileDirectory(), false);'
+    if old not in src:
+        failures.append('MainMenuFragment: 打开文件夹账号限制锚点未找到（上游可能已改）')
+        print('  ⚠️ 打开文件夹账号限制锚点未找到')
+    else:
+        src = src.replace(old, new, 1)
+        print('  ✓ 打开游戏文件夹不再要求微软账号')
+
+    write(path, src)
+
+
 def verify():
-    print('[5/5] 校验...')
+    print('[7/7] 校验...')
     # 两个布局都需要的 id（MainMenuFragment 会 findViewById）
     common_ids = [
         'news_button', 'discord_button', 'custom_control_button', 'install_jar_button',
@@ -183,6 +259,42 @@ def verify():
         else:
             print(f'  ✓ {rel} 全部必要 id 保留')
 
+    # 模组管理界面资源
+    mod_layout = os.path.join(RES, 'layout/fragment_bigfish_mod_manager.xml')
+    mod_item = os.path.join(RES, 'layout/item_bigfish_mod.xml')
+    if not os.path.exists(mod_layout):
+        failures.append('缺少 layout/fragment_bigfish_mod_manager.xml')
+    elif not os.path.exists(mod_item):
+        failures.append('缺少 layout/item_bigfish_mod.xml')
+    else:
+        layout_src = read(mod_layout)
+        item_src = read(mod_item)
+        need_layout = ['bf_mod_list', 'bf_mod_empty', 'bf_mod_back', 'bf_mod_refresh', 'bf_mod_open_dir']
+        need_item = ['bf_mod_item_name', 'bf_mod_item_state']
+        miss = [i for i in need_layout if f'@+id/{i}' not in layout_src]
+        miss += [i for i in need_item if f'@+id/{i}' not in item_src]
+        if miss:
+            failures.append(f'模组管理布局缺少 id: {miss}')
+            print(f'  ⚠️ 模组管理布局缺少 id: {miss}')
+        else:
+            print('  ✓ 模组管理布局 id 完整')
+
+    # 模组管理 Fragment 源码
+    mod_java = os.path.join(JAVA, 'fragments/BigFishModManagerFragment.java')
+    if not os.path.exists(mod_java):
+        failures.append('缺少 fragments/BigFishModManagerFragment.java')
+    else:
+        print('  ✓ fragments/BigFishModManagerFragment.java')
+
+    # MainMenuFragment 改造点
+    menu_src = read(os.path.join(JAVA, 'fragments/MainMenuFragment.java'))
+    if 'BigFishModManagerFragment' not in menu_src:
+        failures.append('MainMenuFragment 未接入模组管理入口')
+    elif 'if (hasOnlineProfile()) {' in menu_src:
+        failures.append('MainMenuFragment 仍有 hasOnlineProfile 限制（离线用户会被拦）')
+    else:
+        print('  ✓ MainMenuFragment 模组管理入口 + 离线解锁')
+
 
 def main():
     if not os.path.isdir(AMETHYST):
@@ -196,6 +308,7 @@ def main():
     copy_ui_assets()
     patch_styles()
     patch_main_menu()
+    patch_offline_and_mods()
     verify()
 
     if failures:
@@ -203,7 +316,7 @@ def main():
         for f in failures:
             print('  -', f)
         sys.exit(1)
-    print('\n✅ patch-ui 完成（BigFish 界面 + 离线登录 + 横屏版本列表）')
+    print('\n✅ patch-ui 完成（BigFish 界面 + 离线登录 + 模组管理 + 横屏版本列表）')
 
 
 if __name__ == '__main__':

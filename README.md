@@ -3,7 +3,7 @@
 [![最新版本](https://img.shields.io/github/v/release/bigfinlab/bigfish?label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC&style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/latest)
 [![下载](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-macOS%20%7C%20Windows%20%7C%20Linux-2ea043?style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/latest)
 [![许可证](https://img.shields.io/github/license/bigfinlab/bigfish?label=%E8%AE%B8%E5%8F%AF%E8%AF%81&style=for-the-badge)](LICENSE)
-[![Android](https://img.shields.io/badge/Android-Beta-3ddc84?style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.1.0)
+[![Android](https://img.shields.io/badge/Android-Beta-3ddc84?style=for-the-badge)](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.2.3)
 
 > 一个**非官方**的开源 Minecraft Java 版启动器 🐟
 >
@@ -48,9 +48,12 @@
 
 **📱 Android 版（Beta）**
 
-安卓完整启动器已发布 **v0.2.0 Beta**：基于 [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)（PojavLauncher 后继，LGPL-3.0）构建，支持完整启动 Minecraft Java 版 —— 版本下载、Forge / Fabric / Quilt 安装、微软 / 离线登录、触屏操作、内置 JRE。
+安卓完整启动器已发布 **v0.2.3 Beta**：基于 [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)（PojavLauncher 后继，LGPL-3.0）构建，支持完整启动 Minecraft Java 版 —— 版本下载、Forge / Fabric / Quilt 安装、模组管理、微软 / 离线登录、触屏操作、内置 JRE。
 
-- 下载：[BigFish-android-debug.apk](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.2.2)（debug 签名，测试版）
+- 下载：[BigFish-android-debug.apk](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.2.3)（debug 签名，测试版）
+- **v0.2.3 新增**：模组管理界面（列出 mods 文件夹、一键停用/启用、删除、打开文件夹）；离线用户也能用「安装 JAR」和「打开游戏文件夹」
+- **v0.2.2 新增**：横屏两栏布局（左侧版本列表 + 右侧功能面板，对齐桌面版）
+- **v0.2.1 新增**：BigFish 风格主界面 + 离线登录修复
 - **v0.2.0 新增 Vulkan**：内置 ArtVK 渲染后端（MC 26.2+ 原生 Vulkan），启动 26.2 版本时自动注入；视频设置可选「Vulkan 渲染引擎」（自动 / 强制开启 / 关闭）
 - 安装：允许「未知来源」安装；首次启动按提示下载运行库
 - 说明：Android 版是独立的 Amethyst 品牌化构建（不含桌面版 Tauri 界面），保留上游版权声明

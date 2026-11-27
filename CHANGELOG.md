@@ -1,3 +1,15 @@
+## Android v0.2.3 — 2026-11-27
+
+- **模组管理界面**：列出当前版本 `mods` 文件夹里的全部模组（`.jar` / `.jar.disabled`），点击可停用/启用（重命名）、删除、打开文件夹
+- **离线用户解锁功能**：没有微软账号也能用「安装 JAR」和「打开游戏文件夹」了（原来会被「需要正版账号」弹窗拦住）
+- 主界面新增「模组管理」入口（原 WIKI 按钮位置）
+- 版本号 0.2.3（versionCode 5）
+
+### 构建
+
+- 新增 `ui/fragments/BigFishModManagerFragment.java`（模组管理 Fragment）+ `ui/layout/fragment_bigfish_mod_manager.xml` / `item_bigfish_mod.xml`
+- `patch-ui.py` 扩到 7 步：复制新 Fragment/布局 + MainMenuFragment 接入模组管理入口 + 去掉 `hasOnlineProfile` 对「安装 JAR / 打开文件夹」的限制
+
 ## Android v0.2.2 — 2026-11-27
 
 - **横屏两栏布局**：左侧「已安装版本」列表（ListView，直接点击切换，当前版本高亮）+ 右侧功能面板，对齐桌面版布局
