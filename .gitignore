@@ -23,3 +23,7 @@ Thumbs.db
 # 本地环境
 .env
 *.local.json
+
+# Python
+__pycache__/
+*.pyc
