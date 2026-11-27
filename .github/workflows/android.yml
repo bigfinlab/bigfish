@@ -70,15 +70,17 @@ jobs:
       - name: Publish APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: android-v0.2.0
-          name: "大肥鱼安卓版 v0.2.0 · 内置 Vulkan"
+          tag_name: android-v0.2.1
+          name: "大肥鱼安卓版 v0.2.1 · BigFish 界面"
           body: |
-            **大肥鱼安卓版 v0.2.0**（Android Beta）—— 开源免费的 Minecraft Java 版启动器。
+            **大肥鱼安卓版 v0.2.1**（Android Beta）—— 开源免费的 Minecraft Java 版启动器。
 
-            **v0.2.0 新增**：
-            - 内置 Vulkan 渲染后端（ArtVK，MC 26.2+ 原生 Vulkan 渲染）
-            - 视频设置新增「Vulkan 渲染引擎」选项：自动（推荐）/ 强制开启 / 关闭
-            - 启动 MC 26.2 版本时自动注入 Vulkan 后端到 mods 目录
+            **v0.2.1 新增**：
+            - **全新 BigFish 风格主界面**：深蓝星空背景、BF logo、圆角卡片按钮、绿色启动键（与桌面版视觉统一）
+            - **离线登录修复**：不再强制要求微软正版账号，本地离线登录直接可用
+            - 版本号 0.2.1（versionCode 3）
+
+            **v0.2.0 已有**：内置 Vulkan 渲染后端（ArtVK，MC 26.2+）、视频设置「Vulkan 渲染引擎」选项（自动/强制开启/关闭）。
 
             **功能**：版本下载、Forge / Fabric / Quilt 安装、微软 / 离线登录、触屏操作、内置 JRE。
             **安装**：下载 APK 后允许「未知来源」安装。

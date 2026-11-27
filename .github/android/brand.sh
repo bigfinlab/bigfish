@@ -31,15 +31,15 @@ echo "== [3/6] 关于页/文案（保留 Amethyst 版权署名，不全局替换
 # 只改启动器显示名（app_name / app_short_name），致谢页保留原署名。
 echo "  保留 Amethyst 版权声明（LGPL 要求）"
 
-echo "== [4/6] 版本号 = 0.2.0（BigFish Android 内置 Vulkan 版）=="
+echo "== [4/7] 版本号 = 0.2.1（BigFish Android 界面改造版）=="
 GRADLE="$AMETHYST/app_pojavlauncher/build.gradle"
 if [ -f "$GRADLE" ]; then
-  sed -i 's|versionName getVersionName()|versionName "0.2.0"|' "$GRADLE"
-  sed -i 's|versionCode 10000000|versionCode 2|' "$GRADLE"
+  sed -i 's|versionName getVersionName()|versionName "0.2.1"|' "$GRADLE"
+  sed -i 's|versionCode 10000000|versionCode 3|' "$GRADLE"
   grep -E 'versionName|versionCode' "$GRADLE" | head -3
 fi
 
-echo "== [5/6] 内置 Vulkan 后端（ArtVK，MC 26.x 原生 Vulkan）=="
+echo "== [5/7] 内置 Vulkan 后端（ArtVK，MC 26.x 原生 Vulkan）=="
 VULKAN_DIR="$AMETHYST/app_pojavlauncher/src/main/assets/vulkan"
 mkdir -p "$VULKAN_DIR"
 ARTVK_URL="https://cdn.modrinth.com/data/FtxBk2DJ/versions/dDReXr6B/artvk-0.1.0.jar"
@@ -55,7 +55,10 @@ else
   echo "  ArtVK 下载失败（跳过内置 Vulkan，其余照常构建）"
 fi
 
-echo "== [6/6] 渲染引擎设置 + 启动注入补丁 =="
+echo "== [6/7] 渲染引擎设置 + 启动注入补丁 =="
 python3 "$ROOT/patch-vulkan.py" "$AMETHYST"
+
+echo "== [7/7] BigFish 界面改造 + 离线登录修复 =="
+python3 "$ROOT/patch-ui.py" "$AMETHYST"
 
 echo "品牌化完成 ✅"
