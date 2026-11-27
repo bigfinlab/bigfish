@@ -48,9 +48,10 @@
 
 **📱 Android 版（Beta）**
 
-安卓完整启动器已发布 **v0.1.0 Beta**：基于 [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)（PojavLauncher 后继，LGPL-3.0）构建，支持完整启动 Minecraft Java 版 —— 版本下载、Forge / Fabric / Quilt 安装、微软 / 离线登录、触屏操作、内置 JRE。
+安卓完整启动器已发布 **v0.2.0 Beta**：基于 [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)（PojavLauncher 后继，LGPL-3.0）构建，支持完整启动 Minecraft Java 版 —— 版本下载、Forge / Fabric / Quilt 安装、微软 / 离线登录、触屏操作、内置 JRE。
 
-- 下载：[BigFish-android-debug.apk](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.1.0)（160.7 MB，debug 签名，测试版）
+- 下载：[BigFish-android-debug.apk](https://github.com/bigfinlab/bigfish/releases/tag/android-v0.2.0)（debug 签名，测试版）
+- **v0.2.0 新增 Vulkan**：内置 ArtVK 渲染后端（MC 26.2+ 原生 Vulkan），启动 26.2 版本时自动注入；视频设置可选「Vulkan 渲染引擎」（自动 / 强制开启 / 关闭）
 - 安装：允许「未知来源」安装；首次启动按提示下载运行库
 - 说明：Android 版是独立的 Amethyst 品牌化构建（不含桌面版 Tauri 界面），保留上游版权声明
 - 后续：正式签名版、真机验证中

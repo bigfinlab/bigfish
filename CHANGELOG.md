@@ -1,3 +1,23 @@
+## Android v0.2.0 — 2026-11-27
+
+安卓版新增内置 Vulkan 渲染支持。
+
+### 新增
+
+- 内置 Vulkan 渲染后端 ArtVK（MC 26.2+ 原生 Vulkan 渲染）：启动对应版本时自动注入到该版本的 mods 目录，无需手动下载
+- 视频设置新增「Vulkan 渲染引擎」选项：自动（推荐，仅 26.2+ 启用）/ 强制开启（所有版本注入）/ 关闭（只用 OpenGL）
+- 说明：Mojang 从 MC 26.4 起将 Vulkan 设为默认渲染后端（26.2 起可选），移动端依靠 ArtVK mod 启用原生 Vulkan
+
+### 说明
+
+- 仍基于 Amethyst-Android（LGPL-3.0），保留上游版权声明
+- debug 签名 Beta 版，ArtVK 兼容性需真机验证
+
+### 构建
+
+- 通过 GitHub Actions 云端构建（`android.yml`），产物 `BigFish-android-debug.apk`（debug 签名）
+- Release: https://github.com/bigfinlab/bigfish/releases/tag/android-v0.2.0
+
 ## Android v0.1.0 — 2026-11-22
 
 首个安卓版（Beta）发布 —— 基于 Amethyst-Android（PojavLauncher 后继，LGPL-3.0）品牌化构建的完整 Minecraft Java 版启动器。
