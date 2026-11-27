@@ -1,3 +1,14 @@
+## Android v0.2.1 — 2026-11-27
+
+- **全新 BigFish 风格主界面**：深蓝星空渐变背景、BF logo 品牌区、圆角卡片按钮、绿色启动键（与桌面版视觉统一）
+- **离线登录修复**：不再强制要求微软正版账号——`SelectAuthFragment` 放开本地登录按钮、`LocalLoginFragment` 去掉「没有微软账号就踢回主菜单」检查
+- 版本号 0.2.1（versionCode 3）
+
+### 构建
+
+- 新增 `.github/android/ui/`（布局/颜色/星空背景/logo 资源）+ `.github/android/patch-ui.py`（构建时应用界面补丁）
+- `brand.sh` 增加 [7/7] 界面补丁步骤
+
 ## Android v0.2.0 — 2026-11-27
 
 安卓版新增内置 Vulkan 渲染支持。
