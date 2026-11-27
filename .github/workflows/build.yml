@@ -108,11 +108,31 @@ jobs:
       - name: 检查产物清单
         run: find artifacts -type f | head -60
 
+      - name: Checkout BigFish（读取 CHANGELOG）
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: CHANGELOG.md
+
+      - name: 提取对应版本更新日志
+        run: |
+          python3 - <<'PYEOF2'
+          import os, re
+          tag = os.environ['GITHUB_REF_NAME'].lstrip('v')
+          text = open('CHANGELOG.md', encoding='utf-8').read()
+          pattern = re.compile(r'^##\s+v?' + re.escape(tag) + r'\b.*?(?=^##\s|\Z)', re.S | re.M)
+          m = pattern.search(text)
+          body = m.group(0).strip() if m else '版本 ' + tag + ' 的更新日志待补充。'
+          body += '\n\n---\n完整更新日志：[CHANGELOG.md](https://github.com/bigfinlab/bigfish/blob/main/CHANGELOG.md)'
+          open('release-body.md', 'w', encoding='utf-8').write(body)
+          print(body[:400])
+          PYEOF2
+
       - name: 创建 Release
         uses: softprops/action-gh-release@v2
         with:
           name: BigFish ${{ github.ref_name }} · 大肥鱼启动器
-          generate_release_notes: true
+          body_path: release-body.md
+          generate_release_notes: false
           # 目录形式的 .app 不上传，发给用户的是 dmg / msi / deb / AppImage
           files: |
             artifacts/**/*.dmg
